@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thank You | NURSA E-HUB 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: url('Image/hero-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #212529; 
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        nav { 
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 0; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+        }
+        .nav-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 0 2rem; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .logo { 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+            color: #198754; 
+            display: flex; 
+            align-items: center; 
+            gap: 0.5rem; 
+        }
+        .logo img { width: 50px; height: auto; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { 
+            color: #212529; 
+            text-decoration: none; 
+            font-weight: 500; 
+        }
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 2rem; 
+            text-align: center; 
+        }
+        .section { 
+            background: #ffffff;
+            padding: 3.5rem 2rem; 
+            border-radius: 1.2rem; 
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid #dee2e6;
+            max-width: 640px;
+            margin: 2rem auto;
+        }
+        .btn { 
+            padding: 1rem 2.5rem; 
+            background: #198754;
+            color: white;  
+            border-radius: 0.6rem; 
+            font-size: 1.1rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.25s;
+            box-shadow: 0 5px 18px rgba(25,135,84,0.28);
+            margin: 0.8rem;
+        }
+        .btn:hover { 
+            background: #157347;
+            transform: translateY(-3px); 
+        }
+        .btn-secondary { background: #20c997; }
+        .btn-secondary:hover { background: #199d76; }
+        footer { 
+            background: #198754;
+            color: white; 
+            text-align: center; 
+            padding: 2.5rem 1rem; 
+            margin-top: 7rem; 
+        }
+
+        #loadingSplash {
+            position: fixed;
+            inset: 0;
+            background: url('Image/hero-background.jpg') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .loader {
+            width: 64px; height: 64px;
+            border: 6px solid rgba(255,255,255,0.25);
+            border-top: 6px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 1.8rem auto 0;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .splash-hidden { opacity: 0; visibility: hidden; }
+
+        .hamburger {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .hamburger { display: flex; flex-direction: column; gap: 5px; cursor: pointer; }
+            .hamburger span { width: 25px; height: 3px; background: #212529; }
+            .nav-links { display: none; }
+            .nav-links.active { display: flex; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: #ffffff; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingSplash">
+        <div style="text-align: center; color: white; text-shadow: 2px 2px 10px rgba(0,0,0,0.85);">
+            <div>
+                <img src="Image/nursing-logo.png" alt="Nursing & Midwifery Logo" style="width:180px;">
+            </div>
+            <h2>Thank You!</h2>
+            <p>Your vote has been recorded</p>
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Nursing & Midwifery Logo">
+                NURSA E-HUB
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+            <div class="hamburger" aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section">
+            <div style="font-size: 6rem; margin-bottom: 1.5rem; line-height: 1;">✅</div>
+            <h1 style="font-size: 2.8rem; color: #198754; margin-bottom: 1.2rem;">
+                Thank You for Voting!
+            </h1>
+            <p style="font-size: 1.35rem; margin: 1.8rem 0 2.5rem;">
+                Your vote has been successfully recorded and is now part of the live results.
+            </p>
+            <p style="font-size: 1.15rem; margin-bottom: 1rem;">
+                Reference Code:
+            </p>
+            <div style="
+                font-size: 1.7rem; 
+                font-weight: 700; 
+                color: #20c997;
+                background: #e9f7ef;
+                padding: 1rem 1.8rem;
+                border-radius: 1rem;
+                display: inline-block;
+                margin-bottom: 2.5rem;
+            " id="refCode">NM-2026-XXXX</div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; justify-content: center;">
+                <button class="btn btn-secondary" onclick="logout()">Return to Home</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Nursing & Midwifery Department Elections</p>
+        <p>Designed by Jeffery Bonsra</p>
+    </footer>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('currentStudent');
+            window.location.href = "index.html";
+        }
+
+        window.onload = function() {
+            const code = localStorage.getItem('lastRefCode') || 'NM-2026-0000';
+            document.getElementById('refCode').textContent = code;
+
+            setTimeout(() => {
+                document.getElementById('loadingSplash')?.classList.add('splash-hidden');
+            }, 1800);
+
+            const hamburger = document.querySelector('.hamburger');
+            const navLinks = document.querySelector('.nav-links');
+
+            if (hamburger && navLinks) {
+                hamburger.addEventListener('click', () => {
+                    hamburger.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                });
+
+                navLinks.querySelectorAll('a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        hamburger.classList.remove('active');
+                        navLinks.classList.remove('active');
+                    });
+                });
+            }
+        };
+    </script>
+</body>
+</html>

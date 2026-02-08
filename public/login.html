@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Authentication | NURSA E-HUB 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('Image/splash-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #212529;
+            min-height: 100vh;
+        }
+        nav {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            padding: 1rem 0;
+            position: sticky; top: 0; z-index: 100;
+        }
+        .nav-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #198754; display: flex; align-items: center; gap: 0.5rem; }
+        .logo img { width: 50px; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .auth-box {
+            max-width: 440px; margin: 3rem auto;
+            background: #ffffff;
+            padding: 2.5rem; border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            border: 1px solid #dee2e6;
+        }
+        h2 { text-align: center; color: #198754; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 600; }
+        input, select {
+            width: 100%; padding: 0.9rem; border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+            background: #ffffff;
+            color: #212529;
+        }
+        .btn {
+            width: 100%; padding: 1rem; background: #198754;
+            color: white; border: none; border-radius: 0.5rem;
+            font-size: 1.1rem; font-weight: 600; cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover { background: #157347; transform: translateY(-2px); }
+        .error-msg { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; display: none; }
+        .links { text-align: center; margin-top: 1.5rem; }
+        .links a { color: #198754; text-decoration: underline; cursor: pointer; }
+        .section { display: none; }
+        .section.active { display: block; }
+
+        #recoveryModal, #loadingSplash {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 2.5rem; border-radius: 1rem;
+            text-align: center; max-width: 480px; width: 90%;
+        }
+        #accessIdDisplay, #recoveryCodeDisplay {
+            font-size: 2.1rem; font-weight: bold; letter-spacing: 2px;
+            background: #e9f7ef; padding: 1rem; border-radius: 0.8rem; margin: 0.8rem 0;
+        }
+        .warning-box {
+            background: #fff3cd; color: #856404; padding: 1rem;
+            border-radius: 0.6rem; margin: 1.5rem 0; font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingSplash" style="display:flex;">
+        <div style="text-align:center; color:white;">
+            <img src="Image/nursing-logo.png" alt="Logo" style="width:160px; margin-bottom:1rem;">
+            <h2>Nursing & Midwifery</h2>
+            <p>Student Elections 2026</p>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Logo">
+                NURSA E-HUB
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="auth-box">
+
+            <div id="loginSection" class="section active">
+                <h2>Student Login</h2>
+                <div class="error-msg" id="loginError"></div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="loginStudentId" required placeholder="e.g. NM2024001">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Access ID <small>(permanent code from registration)</small></label>
+                    <input type="text" id="loginAccessId" required placeholder="e.g. AID-K9M4P7Q2">
+                </div>
+                <button class="btn" onclick="handleLogin()">Login to Vote</button>
+                <div class="links">
+                    <span>New user? <a onclick="showSection('registerSection')">Register here</a></span><br>
+                    <a onclick="showSection('forgotSection')">Forgot password?</a>
+                </div>
+            </div>
+
+            <div id="registerSection" class="section">
+                <h2>Register Account</h2>
+                <div class="error-msg" id="registerError"></div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="regStudentId" required placeholder="e.g. NM2024005">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="regPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="regConfirmPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Security Question</label>
+                    <select id="regQuestion" required>
+                        <option value="">Choose...</option>
+                        <option>What is your favorite food?</option>
+                        <option>What is the name of your primary school?</option>
+                        <option>What is your mother's maiden name?</option>
+                        <option>What city were you born in?</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Answer</label>
+                    <input type="text" id="regAnswer" required>
+                </div>
+                <button class="btn" onclick="handleRegister()">Register</button>
+                <div class="links">
+                    <a onclick="showSection('loginSection')">Already have an account? Login</a>
+                </div>
+            </div>
+
+            <div id="forgotSection" class="section">
+                <h2>Reset Password</h2>
+                <div class="error-msg" id="forgotError"></div>
+                <div class="form-group">
+                    <label>Student ID</label>
+                    <input type="text" id="forgotStudentId" required>
+                </div>
+                <button class="btn" onclick="loadSecurityQuestion()">Get Security Question</button>
+                <div id="recoveryOptions" style="display:none; margin-top:1.5rem;">
+                    <div class="form-group">
+                        <label id="questionText">Security Question</label>
+                        <input type="text" id="forgotAnswer" placeholder="Your answer">
+                    </div>
+                    <div style="margin:1.5rem 0; text-align:center; font-weight:500;">
+                        — OR use your Recovery Code —
+                    </div>
+                    <div class="form-group">
+                        <label>Recovery Code (8 digits)</label>
+                        <input type="text" id="forgotRecoveryCode" placeholder="e.g. 48273915">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="forgotNewPassword">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <input type="password" id="forgotConfirmPassword">
+                    </div>
+                    <button class="btn" onclick="handleResetPassword()">Reset Password</button>
+                </div>
+                <div class="links" style="margin-top:1.5rem;">
+                    <a onclick="showSection('loginSection')">Back to Login</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="recoveryModal">
+        <div class="modal-content">
+            <h3>Registration Successful!</h3>
+            <p style="margin-bottom: 1.5rem;">Please save these two codes securely.<br>They are shown <strong>only once</strong>.</p>
+
+            <div class="warning-box">
+                <strong>Access ID</strong> (required for every login)<br>
+                <div id="accessIdDisplay"></div>
+            </div>
+
+            <div class="warning-box" style="background:#d4edda; color:#155724;">
+                <strong>Recovery Code</strong> (use only if you forget your password)<br>
+                <div id="recoveryCodeDisplay"></div>
+            </div>
+
+            <button class="btn" style="margin-top:2rem;" onclick="document.getElementById('recoveryModal').style.display='none'; showSection('loginSection')">
+                I've saved both codes → Go to Login
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
+        }
+
+        function handleLogin() {
+            const studentId  = document.getElementById('loginStudentId').value.trim().toUpperCase();
+            const password   = document.getElementById('loginPassword').value;
+            const accessId   = document.getElementById('loginAccessId').value.trim().toUpperCase();
+            const error      = document.getElementById('loginError');
+
+            if (!studentId || !password || !accessId) {
+                error.textContent = "Student ID, Password and Access ID are all required";
+                error.style.display = 'block';
+                return;
+            }
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId, password, accessId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('currentStudent', JSON.stringify(data.student));
+                    window.location.href = "dashboard.html";
+                } else {
+                    error.textContent = data.message || "Login failed";
+                    error.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                error.textContent = "Connection error. Please try again.";
+                error.style.display = 'block';
+            });
+        }
+
+        function handleRegister() {
+            const data = {
+                studentId: document.getElementById('regStudentId').value.trim().toUpperCase(),
+                password: document.getElementById('regPassword').value,
+                confirmPassword: document.getElementById('regConfirmPassword').value,
+                question: document.getElementById('regQuestion').value,
+                answer: document.getElementById('regAnswer').value
+            };
+            const error = document.getElementById('registerError');
+
+            if (data.password !== data.confirmPassword) {
+                error.textContent = "Passwords do not match";
+                error.style.display = 'block';
+                return;
+            }
+
+            fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('accessIdDisplay').textContent   = result.accessId;
+                    document.getElementById('recoveryCodeDisplay').textContent = result.recoveryCode;
+                    document.getElementById('recoveryModal').style.display = 'flex';
+                    error.style.display = 'none';
+                } else {
+                    error.textContent = result.message || "Registration failed";
+                    error.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                error.textContent = "Server connection error";
+                error.style.display = 'block';
+            });
+        }
+
+        // Forgot password functions remain unchanged
+        function loadSecurityQuestion() {
+            const studentId = document.getElementById('forgotStudentId').value.trim().toUpperCase();
+            const error = document.getElementById('forgotError');
+
+            fetch('/api/forgot-question', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ studentId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('questionText').textContent = data.question;
+                    document.getElementById('recoveryOptions').style.display = 'block';
+                    error.style.display = 'none';
+                } else {
+                    error.textContent = data.message;
+                    error.style.display = 'block';
+                }
+            });
+        }
+
+        function handleResetPassword() {
+            const studentId = document.getElementById('forgotStudentId').value.trim().toUpperCase();
+            const answer = document.getElementById('forgotAnswer').value;
+            const recoveryCode = document.getElementById('forgotRecoveryCode').value;
+            const newPassword = document.getElementById('forgotNewPassword').value;
+            const confirmPassword = document.getElementById('forgotConfirmPassword').value;
+            const error = document.getElementById('forgotError');
+
+            if (newPassword !== confirmPassword) {
+                error.textContent = "New passwords do not match";
+                error.style.display = 'block';
+                return;
+            }
+
+            const body = { studentId, newPassword, confirmPassword };
+            if (answer.trim()) body.answer = answer.trim();
+            else if (recoveryCode.trim()) body.recoveryCode = recoveryCode.trim();
+            else {
+                error.textContent = "Provide either security answer or recovery code";
+                error.style.display = 'block';
+                return;
+            }
+
+            fetch('/api/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(res => res.json())
+            .then(result => {
+                if (result.success) {
+                    alert("Password reset successful! You can now login.");
+                    showSection('loginSection');
+                } else {
+                    error.textContent = result.message;
+                    error.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                error.textContent = "Server error";
+                error.style.display = 'block';
+            });
+        }
+
+        document.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                if (document.getElementById('loginSection').classList.contains('active')) handleLogin();
+                else if (document.getElementById('registerSection').classList.contains('active')) handleRegister();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('loadingSplash').style.display = 'none', 1800);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cast Your Vote | NURSA E-HUB 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('Image/hero-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #212529;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 80px; /* Prevents nav overlap with content */
+        }
+
+        nav {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.8rem 0;
+            position: fixed; /* Changed to fixed – always stays at top, no "coming down" on scroll */
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #198754;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo img { width: 45px; height: auto; }
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        .nav-links a {
+            color: #212529;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.9rem;
+            border-radius: 6px;
+        }
+        .nav-links a:hover { background: #e9f7ef; color: #198754; }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 1.5rem;
+            flex: 1 0 auto; /* Pushes footer to bottom */
+        }
+        .section {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+        }
+        h2 {
+            text-align: center;
+            color: #198754;
+            font-size: 2.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .position-block {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2.5rem;
+            border: 1px solid #dee2e6;
+        }
+        .position-title {
+            font-size: 1.6rem;
+            color: #198754;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .candidates-grid {
+            display: block;
+            gap: 1.5rem;
+        }
+        @media (min-width: 640px) {
+            .candidates-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .candidate-option {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .candidate-option:hover {
+            border-color: #198754;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+        .candidate-option:has(> input:checked) {
+            border-color: #198754;
+            background: #e9f7ef;
+            box-shadow: 0 6px 20px rgba(25,135,84,0.2);
+        }
+        .candidate-option input[type="radio"] {
+            width: 28px;
+            height: 28px;
+            margin-right: 1.5rem;
+            accent-color: #198754;
+            cursor: pointer;
+        }
+        .candidate-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e9f7ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 2rem;
+            color: #198754;
+            margin-right: 1.5rem;
+        }
+        .candidate-option:has(> input:checked) .candidate-avatar {
+            background: #198754;
+            color: white;
+        }
+        .candidate-info h4 {
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
+        }
+        .candidate-option:has(> input:checked) .candidate-info h4 {
+            color: #157347;
+        }
+        .candidate-info small {
+            color: #6c757d;
+            font-size: 1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .candidate-info p {
+            color: #495057;
+            font-style: italic;
+            font-size: 0.95rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            max-width: 400px;
+            margin: 2rem auto;
+            padding: 1.2rem;
+            background: #198754;
+            color: white;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            background: #157347;
+            transform: translateY(-3px);
+        }
+
+        #confirmModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        .modal-content h3 { color: #198754; margin-bottom: 1.5rem; }
+
+        footer {
+            background: #198754;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            flex-shrink: 0;
+        }
+
+        #loadingSplash {
+            position: fixed;
+            inset: 0;
+            background: url('Image/hero-background.jpg') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+        .splash-hidden { opacity: 0; visibility: hidden; }
+    </style>
+</head>
+<body>
+
+    <div id="loadingSplash">
+        <div style="text-align:center; color:white; text-shadow:0 2px 8px black;">
+            <img src="Image/nursing-logo.png" alt="Logo" style="width:160px; margin-bottom:1rem;">
+            <h2>Cast Your Vote</h2>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Logo">
+                NURSA E-HUB
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section">
+            <h2>Cast Your Vote</h2>
+
+            <!-- Your existing voting form content remains unchanged -->
+            <div class="position-block">
+                <h3 class="position-title">President</h3>
+                <div class="candidates-grid">
+                    <label class="candidate-option">
+                        <input type="radio" name="president" value="sarah">
+                        <div class="candidate-avatar">SJ</div>
+                        <div class="candidate-info">
+                            <h4>Sarah Johnson</h4>
+                            <small>Unity Party</small>
+                            <p>"Together we build a stronger department"</p>
+                        </div>
+                    </label>
+                    <label class="candidate-option">
+                        <input type="radio" name="president" value="john">
+                        <div class="candidate-avatar">JD</div>
+                        <div class="candidate-info">
+                            <h4>John Davis</h4>
+                            <small>Progress Alliance</small>
+                            <p>"Innovation and transparency for all"</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="position-block">
+                <h3 class="position-title">Vice President</h3>
+                <div class="candidates-grid">
+                    <label class="candidate-option">
+                        <input type="radio" name="vicepresident" value="michael">
+                        <div class="candidate-avatar">MC</div>
+                        <div class="candidate-info">
+                            <h4>Michael Chen</h4>
+                            <small>Independent</small>
+                        </div>
+                    </label>
+                    <label class="candidate-option">
+                        <input type="radio" name="vicepresident" value="lisa">
+                        <div class="candidate-avatar">LW</div>
+                        <div class="candidate-info">
+                            <h4>Lisa Williams</h4>
+                            <small>Unity Party</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="position-block">
+                <h3 class="position-title">Secretary</h3>
+                <div class="candidates-grid">
+                    <label class="candidate-option">
+                        <input type="radio" name="secretary" value="emily">
+                        <div class="candidate-avatar">EB</div>
+                        <div class="candidate-info">
+                            <h4>Emily Brown</h4>
+                            <small>Progress Alliance</small>
+                        </div>
+                    </label>
+                    <label class="candidate-option">
+                        <input type="radio" name="secretary" value="robert">
+                        <div class="candidate-avatar">RG</div>
+                        <div class="candidate-info">
+                            <h4>Robert Garcia</h4>
+                            <small>Independent</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <button class="btn" onclick="openConfirmModal()">Submit Vote</button>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal and Footer remain unchanged -->
+    <div id="confirmModal">
+        <div class="modal-content">
+            <h3>Confirm Your Vote</h3>
+            <div class="summary">
+                <p><strong>President:</strong> <span id="summaryPresident">-</span></p>
+                <p><strong>Vice President:</strong> <span id="summaryVP">-</span></p>
+                <p><strong>Secretary:</strong> <span id="summarySecretary">-</span></p>
+            </div>
+            <div style="margin-top: 2rem;">
+                <button onclick="closeModal()" style="background:#6c757d; padding:0.8rem 1.5rem; border:none; color:white; border-radius:0.5rem; margin-right:1rem;">Cancel</button>
+                <button onclick="submitVote()" style="background:#20c997; padding:0.8rem 1.5rem; border:none; color:white; border-radius:0.5rem;">Confirm & Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Nursing & Midwifery Department Elections</p>
+        <p>Designed by Jeffery Bonsra</p>
+    </footer>
+
+    <script>
+        // Your existing script remains unchanged
+        const tempVote = { president: null, vicepresident: null, secretary: null };
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                tempVote[radio.name] = radio.value;
+            });
+        });
+
+        function openConfirmModal() {
+            if (!tempVote.president || !tempVote.vicepresident || !tempVote.secretary) {
+                alert("Please select one candidate for each position.");
+                return;
+            }
+            const names = {
+                sarah: "Sarah Johnson", john: "John Davis",
+                michael: "Michael Chen", lisa: "Lisa Williams",
+                emily: "Emily Brown", robert: "Robert Garcia"
+            };
+            document.getElementById('summaryPresident').textContent = names[tempVote.president];
+            document.getElementById('summaryVP').textContent = names[tempVote.vicepresident];
+            document.getElementById('summarySecretary').textContent = names[tempVote.secretary];
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function submitVote() {
+            const student = JSON.parse(localStorage.getItem('currentStudent'));
+            if (!student || !student.id) { alert("Session expired."); window.location.href = "login.html"; return; }
+
+            fetch('/api/voting-status').then(res => res.json()).then(statusData => {
+                if (!statusData.isOpen) { alert("Voting period is not open!"); closeModal(); return; }
+
+                const names = {
+                    sarah: "Sarah Johnson", john: "John Davis",
+                    michael: "Michael Chen", lisa: "Lisa Williams",
+                    emily: "Emily Brown", robert: "Robert Garcia"
+                };
+
+                const voteData = {
+                    studentId: student.id,
+                    president: names[tempVote.president],
+                    vicepresident: names[tempVote.vicepresident],
+                    secretary: names[tempVote.secretary]
+                };
+
+                fetch('/api/vote', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(voteData) })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            localStorage.setItem('lastRefCode', data.refCode);
+                            window.location.href = "thank-you.html";
+                        } else {
+                            alert(data.message);
+                            closeModal();
+                        }
+                    })
+                    .catch(() => { alert("Server error"); closeModal(); });
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('currentStudent');
+            window.location.href = "index.html";
+        }
+
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('loadingSplash')?.classList.add('splash-hidden'), 1800);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | NURSA E-HUB 2026</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            height: 100%;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('Image/hero-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #212529;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border-bottom: 1px solid #dee2e6;
+            padding: 0.8rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #198754;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo img { width: 45px; height: auto; }
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            list-style: none;
+        }
+        .nav-links a {
+            color: #212529;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.9rem;
+            border-radius: 6px;
+        }
+        .nav-links a:hover { background: #e9f7ef; color: #198754; }
+
+        .container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 1.2rem;
+            flex: 1 0 auto;
+        }
+
+        .dashboard-header {
+            background: #ffffff;
+            color: #212529;
+            padding: 2.5rem 1.5rem;
+            border-radius: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+        }
+        .dashboard-header h1 { font-size: 2.2rem; margin-bottom: 0.8rem; color: #198754; }
+        .status-badge {
+            font-size: 1.15rem;
+            font-weight: 600;
+            padding: 0.4rem 1rem;
+            border-radius: 2rem;
+            display: inline-block;
+            margin-top: 0.8rem;
+        }
+        .status-not-started { background: #ffc107; color: #856404; }
+        .status-ready     { background: #20c997; color: white; }
+        .status-closed    { background: #dc3545; color: white; }
+        .status-error     { background: #dc3545; color: white; }
+
+        .dashboard-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.22s;
+            min-height: 52px;
+            min-width: 180px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            background: #198754;
+            color: white;
+        }
+        .btn:hover { background: #157347; }
+        .btn:disabled  { opacity: 0.6; cursor: not-allowed; background: #6c757d; }
+
+        #votingNotOpenMsg {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: #fff3cd;
+            border-radius: 0.75rem;
+            color: #856404;
+            font-size: 1.05rem;
+            text-align: center;
+            border: 1px solid #ffc107;
+            display: none;
+        }
+
+        #loadingSplash {
+            position: fixed;
+            inset: 0;
+            background: url('Image/hero-background.jpg') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+        .splash-hidden { opacity: 0; visibility: hidden; }
+
+        footer {
+            background: #198754;
+            color: white;
+            text-align: center;
+            padding: 2rem 1rem;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingSplash">
+        <div style="text-align:center; color:white; text-shadow:0 2px 8px black;">
+            <img src="Image/nursing-logo.png" alt="Logo" style="width:160px; margin-bottom:1rem;">
+            <h2>Welcome Back</h2>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Logo">
+                NURSA E-HUB
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="candidates.html">Candidates</a></li>
+                <li><a href="#" onclick="logout()">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>Welcome, <span id="studentName">Student</span></h1>
+            <p>Student ID: <strong id="displayStudentId">Loading...</strong></p>
+            <div class="status-badge" id="voteStatus">Checking status…</div>
+
+            <div class="dashboard-actions">
+                <button class="btn" id="startVotingBtn" disabled>Start Voting</button>
+                <a href="candidates.html" class="btn">View Candidates</a>
+                <button class="btn" style="background:#dc3545;" onclick="logout()">Logout</button>
+            </div>
+
+            <div id="votingNotOpenMsg">
+                <strong>⏳ Voting has not started yet!</strong><br>
+                <span id="openTimeMsg">Loading...</span><br>
+                Please check back later.
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Nursing & Midwifery Department Elections</p>
+        <p>Designed by Jeffery Bonsra</p>
+    </footer>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('currentStudent');
+            window.location.href = "login.html";
+        }
+
+        function formatDateTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function updateVotingStatus() {
+            const statusEl = document.getElementById('voteStatus');
+            const startBtn = document.getElementById('startVotingBtn');
+            const notOpenMsg = document.getElementById('votingNotOpenMsg');
+            const openTimeMsg = document.getElementById('openTimeMsg');
+
+            fetch('/api/voting-status')
+                .then(res => {
+                    if (!res.ok) throw new Error('Server error');
+                    return res.json();
+                })
+                .then(data => {
+                    const now = Date.now();
+                    const isOpen = data.isOpen;
+                    const start = data.start;
+                    const end = data.end;
+
+                    const hasVoted = false;
+
+                    startBtn.disabled = true;
+                    notOpenMsg.style.display = 'none';
+
+                    if (!isOpen) {
+                        if (now < start) {
+                            statusEl.textContent = "Not Started";
+                            statusEl.className = "status-badge status-not-started";
+                            startBtn.textContent = "Voting Not Started";
+
+                            notOpenMsg.style.display = "block";
+                            openTimeMsg.textContent = `Voting opens on ${formatDateTime(start)}.`;
+                        } else {
+                            statusEl.textContent = "Closed";
+                            statusEl.className = "status-badge status-closed";
+                            startBtn.textContent = "Voting Closed";
+                        }
+                    } else if (hasVoted) {
+                        statusEl.textContent = "Voted";
+                        statusEl.className = "status-badge status-closed";
+                        startBtn.textContent = "You Already Voted";
+                    } else {
+                        statusEl.textContent = "Ready to Vote";
+                        statusEl.className = "status-badge status-ready";
+                        startBtn.disabled = false;
+                        startBtn.textContent = "Start Voting";
+                        startBtn.onclick = () => window.location.href = 'voting.html';
+                    }
+                })
+                .catch(err => {
+                    console.error('Status fetch error:', err);
+                    statusEl.textContent = "Error - Check Connection";
+                    statusEl.className = "status-badge status-error";
+                    startBtn.textContent = "Error";
+                });
+        }
+
+        window.onload = () => {
+            const student = JSON.parse(localStorage.getItem('currentStudent') || '{}');
+            if (!student.id) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            document.getElementById('studentName').textContent = student.name || "Student";
+            document.getElementById('displayStudentId').textContent = student.id;
+
+            updateVotingStatus();
+            setInterval(updateVotingStatus, 10000);
+
+            setTimeout(() => document.getElementById('loadingSplash')?.classList.add('splash-hidden'), 1500);
+        };
+    </script>
+</body>
+</html>

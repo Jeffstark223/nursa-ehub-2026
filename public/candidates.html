@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidates | NURSA E-HUB 2026</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+            background:url('Image/hero-background.jpg') no-repeat center center fixed;
+            background-size:cover;
+            color:#212529;
+            line-height:1.6;
+            min-height:100vh;
+            overflow-x:hidden;
+        }
+        nav {
+            background:#ffffff;
+            box-shadow:0 4px 20px rgba(0,0,0,0.12);
+            border-bottom:1px solid #dee2e6;
+            padding:0.8rem 0;
+            position:sticky; top:0; z-index:100;
+        }
+        .nav-container {
+            max-width:1200px; margin:0 auto; padding:0 1rem;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .logo { font-size:1.4rem; font-weight:bold; color:#198754; display:flex; align-items:center; gap:0.5rem; }
+        .logo img { width:45px; height:auto; }
+        .nav-links { display:flex; gap:1.2rem; list-style:none; flex-wrap:wrap; justify-content:center; }
+        .nav-links a { color:#212529; text-decoration:none; font-weight:500; padding:0.5rem 0.9rem; border-radius:6px; }
+        .nav-links a:hover { background:#e9f7ef; color:#198754; }
+
+        .container { max-width:1200px; margin:0 auto; padding:1.2rem; }
+        .section {
+            background:#ffffff;
+            padding:1.8rem; border-radius:1rem;
+            box-shadow:0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom:1.8rem; border:1px solid #dee2e6;
+        }
+        h2 { text-align:center; color:#198754; font-size:2.1rem; margin-bottom:1.5rem; }
+        h3 { color:#198754; margin:2.2rem 0 1.2rem; font-size:1.6rem; }
+        .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:1.5rem; }
+        .card {
+            background:#ffffff;
+            padding:1.6rem; border-radius:1rem; text-align:center;
+            border:1px solid #dee2e6; transition:transform 0.25s; box-shadow:0 4px 12px rgba(0,0,0,0.08);
+        }
+        .card:hover { transform:translateY(-6px); }
+        .candidate-img {
+            width:120px; height:120px; border-radius:50%; background:#e9f7ef;
+            margin:0 auto 1rem; display:flex; align-items:center; justify-content:center;
+            font-size:3rem; color:#198754; font-weight:bold;
+        }
+
+        footer {
+            background:#198754;
+            color:white; text-align:center; padding:1.8rem 1rem; margin-top:5rem;
+        }
+
+        #loadingSplash {
+            position:fixed; inset:0; background:url('Image/hero-background.jpg') center/cover;
+            display:flex; align-items:center; justify-content:center; z-index:9999;
+            transition:opacity 0.8s, visibility 0.8s;
+        }
+        .splash-hidden { opacity:0; visibility:hidden; }
+        .loader { width:60px; height:60px; border:6px solid rgba(255,255,255,0.3); border-top:6px solid white; border-radius:50%; animation:spin 1s linear infinite; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+            z-index: 101;
+        }
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #212529;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+        @media (max-width: 768px) {
+            .hamburger { display: flex; }
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                gap: 1rem;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: #ffffff;
+                padding: 1.5rem;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                text-align: center;
+            }
+            .nav-links.active { display: flex; }
+            .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+            .hamburger.active span:nth-child(2) { opacity: 0; }
+            .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(7px, -6px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loadingSplash">
+        <div style="text-align:center; color:white; text-shadow:0 2px 8px black;">
+            <img src="Image/nursing-logo.png" alt="Logo" style="width:140px; margin-bottom:1rem;" loading="lazy">
+            <h2>Nursing & Midwifery</h2>
+            <p>Student Elections 2026</p>
+            <div class="loader" style="margin:1.5rem auto 0;"></div>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Logo" loading="lazy">
+                NURSA E-HUB
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="candidates.html">Candidates</a></li>
+                <li><a href="admin.html">Admin</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+            <div class="hamburger" aria-label="Toggle navigation menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="section">
+            <h2>Meet the Candidates</h2>
+
+            <h3>President</h3>
+            <div class="grid">
+                <div class="card">
+                    <div class="candidate-img">SJ</div>
+                    <h3>Sarah Johnson</h3>
+                    <p><strong>Unity Party</strong></p>
+                    <p style="margin-top:0.8rem;">"Together we build a stronger department"</p>
+                </div>
+                <div class="card">
+                    <div class="candidate-img">JD</div>
+                    <h3>John Davis</h3>
+                    <p><strong>Progress Alliance</strong></p>
+                    <p style="margin-top:0.8rem;">"Innovation and transparency for all"</p>
+                </div>
+            </div>
+
+            <h3>Vice President</h3>
+            <div class="grid">
+                <div class="card">
+                    <div class="candidate-img">MC</div>
+                    <h3>Michael Chen</h3>
+                    <p><strong>Independent</strong></p>
+                </div>
+                <div class="card">
+                    <div class="candidate-img">LW</div>
+                    <h3>Lisa Williams</h3>
+                    <p><strong>Unity Party</strong></p>
+                </div>
+            </div>
+
+            <h3>Secretary</h3>
+            <div class="grid">
+                <div class="card">
+                    <div class="candidate-img">EB</div>
+                    <h3>Emily Brown</h3>
+                    <p><strong>Progress Alliance</strong></p>
+                </div>
+                <div class="card">
+                    <div class="candidate-img">RG</div>
+                    <h3>Robert Garcia</h3>
+                    <p><strong>Independent</strong></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2026 Nursing & Midwifery Department Elections</p>
+        <p>Designed by Jeffery Bonsra</p>
+    </footer>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => document.getElementById('loadingSplash')?.classList.add('splash-hidden'), 1800);
+        });
+
+        const hamburger = document.querySelector('.hamburger');
+        const navLinks = document.querySelector('.nav-links');
+
+        if (hamburger && navLinks) {
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                navLinks.classList.toggle('active');
+            });
+
+            navLinks.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburger.classList.remove('active');
+                    navLinks.classList.remove('active');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

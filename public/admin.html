@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | NURSA E-HUB 2026</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden !important;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('Image/hero-background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #212529;
+            overflow-y: auto;
+        }
+        nav {
+            background: #ffffff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border-bottom: 1px solid #dee2e6;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            width: 100%;
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #198754;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            white-space: nowrap;
+        }
+        .logo img { width: 50px; height: auto; }
+
+        .container { 
+            width: 100%;
+            max-width: 1200px; 
+            margin: 2rem auto; 
+            padding: 0 1rem; 
+        }
+        h2 { 
+            color: #198754; 
+            text-align: center; 
+            margin-bottom: 1.5rem; 
+            font-size: 2.1rem; 
+        }
+        .section { 
+            background: #ffffff; 
+            padding: 2rem; 
+            border-radius: 1.2rem; 
+            border: 1px solid #dee2e6; 
+            margin-bottom: 2.5rem; 
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1); 
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.8rem;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .admin-grid {
+                grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            }
+            .container { padding: 0 1.5rem; }
+        }
+
+        .admin-card {
+            background: #ffffff;
+            padding: 1.8rem;
+            border-radius: 1rem;
+            border: 1px solid #dee2e6;
+            width: 100%;
+        }
+        .admin-card h3 {
+            color: #198754;
+            margin-bottom: 1.2rem;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background: #198754;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.22s;
+            margin: 0.8rem 0;
+            text-align: center;
+        }
+        .btn:hover { background: #157347; transform: translateY(-2px); }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-export { background: #6f42c1; }
+        .btn-export:hover { background: #5a32a3; }
+        .btn-logout { background: #6c757d; }
+        .btn-logout:hover { background: #545b62; }
+
+        .result-item { margin: 1.4rem 0; }
+        .candidate-name { font-weight: 600; margin-bottom: 0.4rem; display: block; }
+        .result-bar {
+            height: 36px;
+            background: #e2e8f0;
+            border-radius: 0.6rem;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            position: relative;
+            width: 100%;
+        }
+        .result-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #198754, #20c997);
+            transition: width 1s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 1rem;
+            color: white;
+            font-weight: bold;
+            min-width: 4rem;
+        }
+        .total-votes {
+            text-align: center;
+            font-size: 1.4rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(25,135,84,0.12);
+            border-radius: 0.8rem;
+        }
+
+        #authModal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.75);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        .auth-box {
+            background: white;
+            padding: 2.8rem 2rem;
+            border-radius: 1.2rem;
+            width: 90%;
+            max-width: 440px;
+            text-align: center;
+            box-shadow: 0 12px 50px rgba(0,0,0,0.55);
+        }
+        .auth-box input {
+            width: 100%;
+            padding: 1rem;
+            margin: 1.4rem 0 0.8rem;
+            border-radius: 0.5rem;
+            border: 1px solid #cbd5e1;
+        }
+        #errorMsg { color: #dc3545; margin-top: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <!-- Auth Modal -->
+    <div id="authModal">
+        <div class="auth-box">
+            <h2>Admin Login</h2>
+            <input type="password" id="adminPassword" placeholder="Enter Admin Password">
+            <button class="btn" onclick="loginAdmin()">Login</button>
+            <p id="errorMsg"></p>
+        </div>
+    </div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="Image/nursing-logo.png" alt="Logo">
+                NURSA E-HUB
+            </div>
+            <button class="btn btn-logout" onclick="adminLogout()" style="width:auto; display:none;" id="logoutBtn">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2>Admin Panel</h2>
+
+        <div class="section admin-grid">
+            <div class="admin-card">
+                <h3><i class="fas fa-calendar-alt"></i> Voting Period</h3>
+                <div class="form-group">
+                    <label>Start Date & Time</label>
+                    <input type="datetime-local" id="startDate">
+                </div>
+                <div class="form-group">
+                    <label>End Date & Time</label>
+                    <input type="datetime-local" id="endDate">
+                </div>
+                <button class="btn" onclick="updateVotingPeriod()">Update Period</button>
+                <button class="btn" onclick="openVoting()">Open Voting Now</button>
+                <button class="btn btn-danger" onclick="closeVoting()">Close Voting Now</button>
+            </div>
+
+            <div class="admin-card">
+                <h3><i class="fas fa-chart-bar"></i> Live Results</h3>
+                <div id="resultsContainer">
+                    <div class="result-item">
+                        <span class="candidate-name">Sarah Johnson (President)</span>
+                        <div class="result-bar"><div class="result-fill" id="sarahBar">0%</div></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="candidate-name">John Davis (President)</span>
+                        <div class="result-bar"><div class="result-fill" id="johnBar">0%</div></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="candidate-name">Michael Chen (Vice President)</span>
+                        <div class="result-bar"><div class="result-fill" id="michaelBar">0%</div></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="candidate-name">Lisa Williams (Vice President)</span>
+                        <div class="result-bar"><div class="result-fill" id="lisaBar">0%</div></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="candidate-name">Emily Brown (Secretary)</span>
+                        <div class="result-bar"><div class="result-fill" id="emilyBar">0%</div></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="candidate-name">Robert Garcia (Secretary)</span>
+                        <div class="result-bar"><div class="result-fill" id="robertBar">0%</div></div>
+                    </div>
+                    <div class="total-votes">
+                        Total Votes: <strong id="totalVotes">0</strong> 
+                        <br><small>Turnout: <span id="turnout">0%</span></small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <h3><i class="fas fa-file-export"></i> Export & Reset</h3>
+                <button class="btn btn-export" onclick="exportVotesToCSV()">Export Votes to CSV</button>
+                <button class="btn btn-danger" onclick="confirmReset()">Reset All Votes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function loginAdmin() {
+            const input = document.getElementById('adminPassword');
+            const error = document.getElementById('errorMsg');
+            fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: input.value })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('adminToken', data.token);
+                    document.getElementById('authModal').style.display = 'none';
+                    document.getElementById('logoutBtn').style.display = 'block';
+                    loadVotingPeriod();
+                    fetchResults();
+                    setInterval(fetchResults, 8000);
+                } else {
+                    error.textContent = data.message || "Incorrect password";
+                    input.value = "";
+                    input.focus();
+                }
+            })
+            .catch(() => error.textContent = "Server error");
+        }
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('adminToken');
+            if (!token) {
+                alert("Your session has expired. Please log in again.");
+                document.getElementById('authModal').style.display = 'flex';
+                return {};
+            }
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+        }
+
+        function adminLogout() {
+            localStorage.removeItem('adminToken');
+            location.reload();
+        }
+
+        function loadVotingPeriod() {
+            fetch('/api/voting-status')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('startDate').value = new Date(data.start).toISOString().slice(0,16);
+                    document.getElementById('endDate').value = new Date(data.end).toISOString().slice(0,16);
+                })
+                .catch(err => console.error(err));
+        }
+
+        function updateVotingPeriod() {
+            const s = document.getElementById('startDate').value;
+            const e = document.getElementById('endDate').value;
+            if (!s || !e) return alert("Please select both dates");
+            if (new Date(s) >= new Date(e)) return alert("End must be after start");
+
+            fetch('/api/admin/set-period', {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify({ start: new Date(s).toISOString(), end: new Date(e).toISOString() })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Updated successfully");
+                    loadVotingPeriod();
+                } else {
+                    alert("Error: " + (data.message || "Unauthorized"));
+                }
+            });
+        }
+
+        function openVoting() {
+            if (!confirm("Open voting now?")) return;
+            fetch('/api/open-voting', { method: 'POST', headers: getAuthHeaders() })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) alert("Voting opened");
+                    loadVotingPeriod();
+                });
+        }
+
+        function closeVoting() {
+            if (!confirm("CLOSE voting now?")) return;
+            fetch('/api/close-voting', { method: 'POST', headers: getAuthHeaders() })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) alert("Voting closed");
+                    loadVotingPeriod();
+                });
+        }
+
+        function fetchResults() {
+            fetch('/api/results')
+                .then(res => res.json())
+                .then(data => {
+                    const total = data.total || 0;
+                    document.getElementById('totalVotes').textContent = total;
+                    document.getElementById('turnout').textContent = total ? Math.round((total / 150) * 100) + '%' : '0%';
+
+                    const counts = data.counts || {};
+                    const update = (id, name, pos) => {
+                        const c = (counts[pos]?.[name]) || 0;
+                        const p = total ? Math.round((c / total) * 100) : 0;
+                        const bar = document.getElementById(id + 'Bar');
+                        if (bar) {
+                            bar.style.width = p + '%';
+                            bar.textContent = p + '%';
+                        }
+                    };
+
+                    update('sarah', 'Sarah Johnson', 'president');
+                    update('john', 'John Davis', 'president');
+                    update('michael', 'Michael Chen', 'vicepresident');
+                    update('lisa', 'Lisa Williams', 'vicepresident');
+                    update('emily', 'Emily Brown', 'secretary');
+                    update('robert', 'Robert Garcia', 'secretary');
+                })
+                .catch(err => console.error(err));
+        }
+
+        function exportVotesToCSV() {
+            fetch('/api/export-votes', { headers: getAuthHeaders() })
+                .then(res => {
+                    if (!res.ok) throw new Error("Unauthorized");
+                    return res.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `nursa-votes-${new Date().toISOString().slice(0,10)}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                })
+                .catch(() => alert("Export failed - check if logged in"));
+        }
+
+        function confirmReset() {
+            const text = prompt("Type exactly: RESET ALL VOTES");
+            if (text !== "RESET ALL VOTES") return;
+
+            fetch('/api/reset', { method: 'POST', headers: getAuthHeaders() })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("All votes reset!");
+                        fetchResults();
+                    } else {
+                        alert("Reset failed: " + (data.message || "Unauthorized"));
+                    }
+                })
+                .catch(() => alert("Server error"));
+        }
+
+        document.getElementById('adminPassword')?.addEventListener('keypress', e => {
+            if (e.key === 'Enter') loginAdmin();
+        });
+    </script>
+</body>
+</html>
