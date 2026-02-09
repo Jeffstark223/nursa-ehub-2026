@@ -171,53 +171,47 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { accessId, password } = req.body;
-
-  if (!accessId || !password) {
-    return res.json({ success: false, message: "Access ID and password required" });
-  }
-
-  const cleanAccess = accessId.trim().toUpperCase();
-
-  try {
-    const { data: student, error } = await supabase
-      .from('registered_students')
-      .select(`
-        student_id,
-        password_hash,
-        password_salt,
-        allowed_students!inner (full_name)
-      `)
-      .eq('access_id', cleanAccess)
-      .single();
-
-    if (error || !student) {
-      return res.json({ success: false, message: "Invalid Access ID or not registered" });
+    const { accessId, password } = req.body;
+  
+    if (!accessId || !password) {
+      return res.json({ success: false, message: "Access ID and password required" });
     }
-
-    if (verifyHash(password, student.password_salt, student.password_hash)) {
-      res.json({
-        success: true,
-        student: {
-          id: student.student_id,
-          name: student.allowed_students?.full_name || "Student",
-          accessId: cleanAccess
-        }
-      });
-    } else {
-      res.json({ success: false, message: "Incorrect password" });
+  
+    const cleanAccess = accessId.trim().toUpperCase();
+  
+    try {
+      const { data: studentRecord, error } = await supabase
+        .from('registered_students')
+        .select(`
+          student_id,
+          password_hash,
+          password_salt,
+          allowed_students!inner (full_name)
+        `)
+        .eq('access_id', cleanAccess)
+        .single();
+  
+      if (error || !studentRecord) {
+        return res.json({ success: false, message: "Invalid Access ID or not registered" });
+      }
+  
+      if (verifyHash(password, studentRecord.password_salt, studentRecord.password_hash)) {
+        res.json({
+          success: true,
+          student: {
+            id: studentRecord.student_id,
+            name: studentRecord.allowed_students?.full_name || "Student",
+            accessId: cleanAccess
+          }
+        });
+      } else {
+        res.json({ success: false, message: "Incorrect password" });
+      }
+    } catch (err) {
+      console.error('Login error:', err.message);
+      res.json({ success: false, message: "Server error – please try again" });
     }
-  } catch (err) {
-    console.error('Login error:', err.message);
-    res.json({ success: false, message: "Server error" });
-  }
-});
-// In login fetch success handler
-localStorage.setItem('currentStudent', JSON.stringify({
-    id: data.student.id,
-    name: data.student.name,
-    accessId: data.student.accessId
-  }));
+  });
 
 app.post('/api/vote', async (req, res) => {
   const { studentId, president, vicepresident, secretary } = req.body;
