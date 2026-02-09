@@ -196,6 +196,7 @@ app.post('/api/vote', async (req, res) => {
   }
 
   const voterHash = getVoteHash(studentId);
+  console.log('[VOTE DEBUG] studentId received:', studentId, '→ hash:', voterHash);
 
   try {
     const { data: existing } = await supabase
