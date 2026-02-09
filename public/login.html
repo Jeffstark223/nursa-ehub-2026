@@ -101,13 +101,13 @@
                 </div>
                 <div class="form-group">
                     <label>Access ID</label>
-                    <input type="text" id="loginAccessId" placeholder="e.g. ACCESS-XXXXXXXX" required>
+                    <input type="text" id="loginAccessId" placeholder="ACCESS-XXXXXXXX" required>
                   </div>
                   <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="loginPassword" required>
                   </div>
-                <button type="button" id="loginBtn" class="btn">Login</button>
+                  <button id="loginBtn" type="button" class="btn">Login</button>
                 <div class="links">
                     <a href="#" onclick="showSection('registerSection'); return false;">Register here</a>
                     <a onclick="showSection('forgotSection')">Forgot password?</a>
@@ -209,44 +209,71 @@
     </div>
 
     <script>
-        async function handleLogin() {
-            const accessId = document.getElementById('loginAccessId')?.value.trim();
-            const password = document.getElementById('loginPassword')?.value;
-          
-            if (!accessId || !password) {
-              showError("Please enter both Access ID and password");
-              return;
-            }
-          
-            try {
-              const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  accessId: accessId,
-                  password: password
-                })
-              });
-          
-              const data = await response.json();
-          
-              if (data.success) {
-                localStorage.setItem('currentStudent', JSON.stringify(data.student));
-                window.location.href = 'dashboard.html';
-              } else {
-                showError(data.message || "Login failed");
-              }
-            } catch (err) {
-              console.error('Login fetch error:', err);
-              showError("Network error – check connection");
-            }
-          }
-          
-          // Attach to button or form
-          document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
-
+        a// Make sure this runs after the page is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("Page loaded – attaching login handler");
+  
+    const loginBtn = document.getElementById('loginBtn');
+    
+    if (!loginBtn) {
+      console.error("Login button not found! Check id='loginBtn'");
+      return;
+    }
+  
+    console.log("Login button found – click handler attached");
+  
+    loginBtn.addEventListener('click', async () => {
+      console.log("Login button clicked!");
+  
+      const accessIdField = document.getElementById('loginAccessId');
+      const passwordField = document.getElementById('loginPassword');
+  
+      if (!accessIdField || !passwordField) {
+        alert("Form fields not found – check IDs");
+        return;
+      }
+  
+      const accessId = accessIdField.value.trim();
+      const password = passwordField.value;
+  
+      if (!accessId || !password) {
+        alert("Please enter both Access ID and password");
+        return;
+      }
+  
+      // Show loading (optional)
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Logging in...";
+  
+      try {
+        const response = await fetch('/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            accessId: accessId,
+            password: password
+          })
+        });
+  
+        const data = await response.json();
+  
+        if (data.success) {
+          localStorage.setItem('currentStudent', JSON.stringify(data.student));
+          window.location.href = 'dashboard.html'; // or your dashboard path
+        } else {
+          alert(data.message || "Login failed");
+        }
+      } catch (err) {
+        console.error("Login fetch failed:", err);
+        alert("Network error – check connection or server");
+      } finally {
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      }
+    });
+  });
         function handleRegister() {
             const data = {
                 studentId: document.getElementById('regStudentId').value.trim().toUpperCase(),
@@ -374,18 +401,6 @@
                 console.error("Section not found: " + sectionId);
             }
         }
-        // Temporary test - should show alert when page loads
-console.log("Login script loaded");
-
-const testBtn = document.getElementById('loginBtn');
-if (testBtn) {
-  console.log("Button found!");
-  testBtn.addEventListener('click', () => {
-    alert("Button clicked! Now checking fields...");
-  });
-} else {
-  console.log("Button NOT found - check id='loginBtn'");
-}
     </script>
 </body>
 </html>
