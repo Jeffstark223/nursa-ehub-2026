@@ -107,7 +107,7 @@
                     <label>Access ID <small>(permanent code from registration)</small></label>
                     <input type="text" id="loginAccessId" required placeholder="e.g. AID-K9M4P7Q2">
                 </div>
-                <button class="btn" onclick="handleLogin()">Login to Vote</button>
+                <button type="button" id="loginBtn" class="btn">Login</button>
                 <div class="links">
                     <span>New user? <a onclick="showSection('registerSection')">Register here</a></span><br>
                     <a onclick="showSection('forgotSection')">Forgot password?</a>
@@ -209,44 +209,53 @@
     </div>
 
     <script>
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            document.querySelectorAll('.error-msg').forEach(e => e.style.display = 'none');
-        }
-
-        function handleLogin() {
-            const studentId  = document.getElementById('loginStudentId').value.trim().toUpperCase();
-            const password   = document.getElementById('loginPassword').value;
-            const accessId   = document.getElementById('loginAccessId').value.trim().toUpperCase();
-            const error      = document.getElementById('loginError');
-
-            if (!studentId || !password || !accessId) {
-                error.textContent = "Student ID, Password and Access ID are all required";
-                error.style.display = 'block';
+        document.getElementById('loginBtn').addEventListener('click', function(e) {
+            e.preventDefault();  // ← this is very important
+        
+            const studentId = document.getElementById('loginStudentId').value.trim();
+            const password = document.getElementById('loginPassword').value;
+        
+            if (!studentId || !password) {
+                // show error
+                document.getElementById('loginError').textContent = "Please fill all fields";
+                document.getElementById('loginError').style.display = 'block';
                 return;
             }
-
+        
+            const error = document.getElementById('loginError');
+            error.style.display = 'none';
+        
             fetch('/api/login', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId, password, accessId })
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    studentId: studentId.toUpperCase(),
+                    password: password
+                })
             })
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! Status: ${res.status}`);
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     localStorage.setItem('currentStudent', JSON.stringify(data.student));
-                    window.location.href = "dashboard.html";
+                    window.location.href = 'dashboard.html';  // or voting.html / thank-you
                 } else {
                     error.textContent = data.message || "Login failed";
                     error.style.display = 'block';
                 }
             })
-            .catch(() => {
-                error.textContent = "Connection error. Please try again.";
+            .catch(err => {
+                console.error('Login error:', err);
+                error.textContent = "Connection error - please try again later";
                 error.style.display = 'block';
             });
-        }
+        });
 
         function handleRegister() {
             const data = {
