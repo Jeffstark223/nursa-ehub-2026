@@ -178,6 +178,13 @@ app.post('/api/login', async (req, res) => {
     }
   
     const cleanAccess = accessId.trim().toUpperCase();
+    console.log('Login attempt with cleanAccess:', cleanAccess);
+const { data: debugRecord } = await supabase
+  .from('registered_students')
+  .select('access_id')
+  .eq('access_id', cleanAccess)
+  .maybeSingle();
+console.log('Found matching access_id in DB?', !!debugRecord);
   
     try {
       const { data: studentRecord, error } = await supabase
