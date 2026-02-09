@@ -178,7 +178,7 @@ app.post('/api/login', async (req, res) => {
     }
   
     const cleanAccess = accessId.trim().toUpperCase();
-    console.log('Login attempt with cleanAccess:', cleanAccess);
+    console.log('[LOGIN DEBUG] Received accessId:', accessId, '→ cleaned:', cleanAccess);
 const { data: debugRecord } = await supabase
   .from('registered_students')
   .select('access_id')
