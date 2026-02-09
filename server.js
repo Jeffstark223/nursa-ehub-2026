@@ -50,13 +50,14 @@ async function loadVotingPeriod() {
     votingStart = startRow ? Number(startRow.value) : Date.now();
     votingEnd   = endRow   ? Number(endRow.value)   : Date.now() + 7 * 86400000;
 
-    console.log(`Voting period: ${new Date(votingStart).toISOString()} → ${new Date(votingEnd).toISOString()}`);
+    console.log(`Voting period loaded: ${new Date(votingStart).toISOString()} → ${new Date(votingEnd).toISOString()}`);
   } catch (err) {
     console.error('Failed to load voting period:', err);
   }
 }
 
-loadVotingPeriod(); // run once at startup
+// Call it once at startup
+loadVotingPeriod();
 
 // ────────────────────────────────────────────────
 //   HASH HELPERS (unchanged)
@@ -80,7 +81,6 @@ function getVoteHash(studentId) {
 // ────────────────────────────────────────────────
 //   ADMIN AUTH MIDDLEWARE (unchanged)
 // ────────────────────────────────────────────────
-
 let currentAdminToken = null;
 
 function requireAdmin(req, res, next) {
@@ -293,21 +293,143 @@ app.get('/api/voting-status', (req, res) => {
 });
 
 // ────────────────────────────────────────────────
-//   ADMIN ENDPOINTS (example – keep / adapt as needed)
+//   ADMIN LOGIN (unchanged)
 // ────────────────────────────────────────────────
-
 app.post('/api/admin/login', (req, res) => {
-  const { password } = req.body;
-  if (password === ADMIN_PASSWORD) {
-    currentAdminToken = crypto.randomBytes(32).toString('hex');
-    res.json({ success: true, token: currentAdminToken });
-  } else {
-    res.json({ success: false, message: "Incorrect password" });
-  }
-});
-
-// Add your other admin routes here (set-period, open-voting, close-voting, reset, export-votes)
-// You can adapt them to use supabase instead of lowdb
+    const { password } = req.body;
+    if (password === ADMIN_PASSWORD) {
+      currentAdminToken = crypto.randomBytes(32).toString('hex');
+      res.json({ success: true, token: currentAdminToken });
+    } else {
+      res.json({ success: false, message: "Incorrect password" });
+    }
+  });
+  
+  // ────────────────────────────────────────────────
+  //   ADMIN: Set custom voting period
+  // ────────────────────────────────────────────────
+  app.post('/api/admin/set-period', requireAdmin, async (req, res) => {
+    const { start, end } = req.body;
+  
+    if (!start || !end || isNaN(new Date(start).getTime()) || isNaN(new Date(end).getTime())) {
+      return res.status(400).json({ success: false, message: "Invalid or missing start/end dates" });
+    }
+  
+    const startTime = new Date(start).getTime();
+    const endTime   = new Date(end).getTime();
+  
+    try {
+      // Update config table (upsert)
+      await supabase
+        .from('config')
+        .upsert([
+          { key: 'votingStart', value: startTime },
+          { key: 'votingEnd',   value: endTime }
+        ], { onConflict: 'key' });
+  
+      // Reload in-memory variables
+      await loadVotingPeriod();
+  
+      res.json({ success: true, message: "Voting period updated successfully" });
+    } catch (err) {
+      console.error('Set period error:', err.message);
+      res.status(500).json({ success: false, message: "Failed to update voting period" });
+    }
+  });
+  
+  // ────────────────────────────────────────────────
+  //   ADMIN: Open voting now
+  // ────────────────────────────────────────────────
+  app.post('/api/open-voting', requireAdmin, async (req, res) => {
+    try {
+      const now = Date.now();
+  
+      await supabase
+        .from('config')
+        .upsert([
+          { key: 'votingStart', value: now - 1000 }, // slightly in the past
+          { key: 'votingEnd',   value: new Date('2030-12-31').getTime() }
+        ], { onConflict: 'key' });
+  
+      await loadVotingPeriod();
+  
+      res.json({ success: true, message: "Voting opened successfully" });
+    } catch (err) {
+      console.error('Open voting error:', err.message);
+      res.status(500).json({ success: false, message: "Failed to open voting" });
+    }
+  });
+  
+  // ────────────────────────────────────────────────
+  //   ADMIN: Close voting now
+  // ────────────────────────────────────────────────
+  app.post('/api/close-voting', requireAdmin, async (req, res) => {
+    try {
+      const now = Date.now();
+  
+      await supabase
+        .from('config')
+        .upsert([
+          { key: 'votingEnd', value: now - 1000 }
+        ], { onConflict: 'key' });
+  
+      await loadVotingPeriod();
+  
+      res.json({ success: true, message: "Voting closed successfully" });
+    } catch (err) {
+      console.error('Close voting error:', err.message);
+      res.status(500).json({ success: false, message: "Failed to close voting" });
+    }
+  });
+  
+  // ────────────────────────────────────────────────
+  //   ADMIN: Reset all votes (deletes everything from votes table)
+  // ────────────────────────────────────────────────
+  app.post('/api/reset', requireAdmin, async (req, res) => {
+    try {
+      const { error } = await supabase
+        .from('votes')
+        .delete()
+        .neq('id', 0);  // delete all rows
+  
+      if (error) throw error;
+  
+      res.json({ success: true, message: "All votes have been reset" });
+    } catch (err) {
+      console.error('Reset votes error:', err.message);
+      res.status(500).json({ success: false, message: "Failed to reset votes" });
+    }
+  });
+  
+  // ────────────────────────────────────────────────
+  //   ADMIN: Export votes as CSV
+  // ────────────────────────────────────────────────
+  app.get('/api/export-votes', requireAdmin, async (req, res) => {
+    try {
+      const { data: votes, error } = await supabase
+        .from('votes')
+        .select('president, vicepresident, secretary, timestamp, ref_code');
+  
+      if (error) throw error;
+  
+      if (!votes || votes.length === 0) {
+        return res.status(200).send('No votes recorded yet.\n');
+      }
+  
+      let csv = 'President,VicePresident,Secretary,Timestamp,ReferenceCode\n';
+  
+      votes.forEach(v => {
+        csv += `"${(v.president || '')}","${(v.vicepresident || '')}","${(v.secretary || '')}","${v.timestamp}","${v.ref_code}"\n`;
+      });
+  
+      res.header('Content-Type', 'text/csv');
+      res.attachment(`nursa-votes-${new Date().toISOString().slice(0,10)}.csv`);
+      res.send(csv);
+    } catch (err) {
+      console.error('Export error:', err.message);
+      res.status(500).send('Error exporting votes');
+    }
+  });
 
 // ────────────────────────────────────────────────
 //   START SERVER
