@@ -100,13 +100,13 @@
                     <input type="text" id="loginStudentId" required placeholder="e.g. NM2024001">
                 </div>
                 <div class="form-group">
+                    <label>Access ID</label>
+                    <input type="text" id="loginAccessId" placeholder="e.g. ACCESS-XXXXXXXX" required>
+                  </div>
+                  <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="loginPassword" required>
-                </div>
-                <div class="form-group">
-                    <label>Access ID <small>(permanent code from registration)</small></label>
-                    <input type="text" id="loginAccessId" required placeholder="e.g. AID-K9M4P7Q2">
-                </div>
+                  </div>
                 <button type="button" id="loginBtn" class="btn">Login</button>
                 <div class="links">
                     <a href="#" onclick="showSection('registerSection'); return false;">Register here</a>
@@ -209,53 +209,43 @@
     </div>
 
     <script>
-        document.getElementById('loginBtn').addEventListener('click', function(e) {
-            e.preventDefault();  // ← this is very important
-        
-            const studentId = document.getElementById('loginStudentId').value.trim();
-            const password = document.getElementById('loginPassword').value;
-        
-            if (!studentId || !password) {
-                // show error
-                document.getElementById('loginError').textContent = "Please fill all fields";
-                document.getElementById('loginError').style.display = 'block';
-                return;
+        async function handleLogin() {
+            const accessId = document.getElementById('loginAccessId')?.value.trim();
+            const password = document.getElementById('loginPassword')?.value;
+          
+            if (!accessId || !password) {
+              showError("Please enter both Access ID and password");
+              return;
             }
-        
-            const error = document.getElementById('loginError');
-            error.style.display = 'none';
-        
-            fetch('/api/login', {
+          
+            try {
+              const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                  'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    studentId: studentId.toUpperCase(),
-                    password: password
+                  accessId: accessId,
+                  password: password
                 })
-            })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! Status: ${res.status}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    localStorage.setItem('currentStudent', JSON.stringify(data.student));
-                    window.location.href = 'dashboard.html';  // or voting.html / thank-you
-                } else {
-                    error.textContent = data.message || "Login failed";
-                    error.style.display = 'block';
-                }
-            })
-            .catch(err => {
-                console.error('Login error:', err);
-                error.textContent = "Connection error - please try again later";
-                error.style.display = 'block';
-            });
-        });
+              });
+          
+              const data = await response.json();
+          
+              if (data.success) {
+                localStorage.setItem('currentStudent', JSON.stringify(data.student));
+                window.location.href = 'dashboard.html';
+              } else {
+                showError(data.message || "Login failed");
+              }
+            } catch (err) {
+              console.error('Login fetch error:', err);
+              showError("Network error – check connection");
+            }
+          }
+          
+          // Attach to button or form
+          document.getElementById('loginBtn')?.addEventListener('click', handleLogin);
 
         function handleRegister() {
             const data = {
