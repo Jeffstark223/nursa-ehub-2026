@@ -170,19 +170,22 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// TEMPORARY DEMO BYPASS – allows ~20 unique logins without real check
 app.post('/api/login', async (req, res) => {
-    // TEMPORARY BYPASS FOR DEMO – IGNORE REAL CHECKS
-    console.log('[DEMO LOGIN] Bypass enabled – logging in any input');
+    console.log('[DEMO LOGIN] Bypass active – generating unique demo user');
   
-    const { accessId = 'DEMO-ACCESS-ID', password = 'anything' } = req.body; // default if missing
+    // Use a random number to make each login "unique" (up to 9999)
+    const randomNum = Math.floor(Math.random() * 9999) + 1;
+    const fakeStudentId = `DEMO-STUDENT-${String(randomNum).padStart(4, '0')}`;
+    const fakeName = `Demo Voter ${randomNum}`;
   
-    // Pretend success – return fake/demo student data
+    // Return unique student data for this session
     res.json({
       success: true,
       student: {
-        id: 'DEMO-STUDENT-001',
-        name: 'Demo Voter',                 // Change this to your name if you want
-        accessId: accessId || 'DEMO-ACCESS-ID'
+        id: fakeStudentId,
+        name: fakeName,
+        accessId: 'DEMO-ACCESS-' + randomNum
       }
     });
   });
