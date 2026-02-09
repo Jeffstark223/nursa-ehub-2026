@@ -109,7 +109,7 @@
                 </div>
                 <button type="button" id="loginBtn" class="btn">Login</button>
                 <div class="links">
-                    <span>New user? <a onclick="showSection('registerSection')">Register here</a></span><br>
+                    <a href="#" onclick="showSection('registerSection'); return false;">Register here</a>
                     <a onclick="showSection('forgotSection')">Forgot password?</a>
                 </div>
             </div>
@@ -373,6 +373,17 @@
         window.addEventListener('load', () => {
             setTimeout(() => document.getElementById('loadingSplash').style.display = 'none', 1800);
         });
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => {
+                sec.classList.remove('active');
+            });
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.classList.add('active');
+            } else {
+                console.error("Section not found: " + sectionId);
+            }
+        }
     </script>
 </body>
 </html>
