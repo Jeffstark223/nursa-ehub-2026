@@ -374,6 +374,18 @@
                 console.error("Section not found: " + sectionId);
             }
         }
+        // Temporary test - should show alert when page loads
+console.log("Login script loaded");
+
+const testBtn = document.getElementById('loginBtn');
+if (testBtn) {
+  console.log("Button found!");
+  testBtn.addEventListener('click', () => {
+    alert("Button clicked! Now checking fields...");
+  });
+} else {
+  console.log("Button NOT found - check id='loginBtn'");
+}
     </script>
 </body>
 </html>
