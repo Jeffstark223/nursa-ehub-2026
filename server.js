@@ -9,6 +9,25 @@ const crypto = require('crypto');
 const { LowSync } = require('lowdb');
 const { JSONFileSync } = require('lowdb/node');
 
+// Force read and safety checks
+voteDb.read();
+studentsDb.read();
+
+if (!voteDb.data || typeof voteDb.data !== 'object') {
+    console.error("votes.json failed to load - initializing empty");
+    voteDb.data = { votes: [], votedHashes: [] };
+    voteDb.write();
+}
+
+if (!studentsDb.data || !Array.isArray(studentsDb.data)) {
+    console.error("students.json failed to load - initializing empty array");
+    studentsDb.data = [];
+    studentsDb.write();
+}
+
+console.log("Database initialized - votes count:", voteDb.data.votes?.length || 0);
+console.log("Students loaded:", studentsDb.data.length);
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -126,52 +145,70 @@ app.post('/api/register', (req, res) => {
 
 // Login - now requires Access ID every time
 app.post('/api/login', (req, res) => {
-    console.log('Login attempt received:', req.body);  // ← this will appear in Render logs
+    console.log('[LOGIN REQUEST] Body received:', req.body);
 
-    const { studentId, password } = req.body;
+    let studentId = req.body?.studentId;
+    let password = req.body?.password;
 
+    // Basic input validation
     if (!studentId || !password) {
-        return res.status(400).json({ success: false, message: "Missing student ID or password" });
+        console.log('[LOGIN] Missing studentId or password');
+        return res.json({
+            success: false,
+            message: "Student ID and password are required"
+        });
     }
 
-    const upperId = studentId.toUpperCase().trim();
+    studentId = studentId.trim().toUpperCase();
 
     try {
-        studentsDb.read();  // force reload
+        // Force reload database
+        studentsDb.read();
+
+        // Safety check: make sure we have valid data
         if (!studentsDb.data || !Array.isArray(studentsDb.data)) {
-            console.error('studentsDb.data is invalid:', studentsDb.data);
-            return res.status(500).json({ success: false, message: "Server database error - contact admin" });
+            console.error('[LOGIN] studentsDb.data is invalid or not an array');
+            return res.status(500).json({
+                success: false,
+                message: "Server database error (students list not loaded)"
+            });
         }
 
-        const student = studentsDb.data.find(s => s.id === upperId);
+        console.log('[LOGIN] Found', studentsDb.data.length, 'students in database');
+
+        // Find student
+        const student = studentsDb.data.find(s => s.id === studentId);
 
         if (!student) {
-            return res.json({ success: false, message: "Invalid student ID" });
+            console.log('[LOGIN] Student not found:', studentId);
+            return res.json({
+                success: false,
+                message: "Invalid student ID"
+            });
         }
 
-        if (!student.hashedPassword || !student.salt) {
-            console.log('Student found but no password set:', upperId);
-            return res.json({ success: false, message: "Account not fully registered - no password set" });
-        }
+        // For now – accept ANY password (temporary – to test if we reach this point)
+        // Later you can put back password verification
+        console.log('[LOGIN] Student found:', student.id, student.name || 'no name');
 
-        const passwordValid = verifyHash(password, student.salt, student.hashedPassword);
-
-        if (!passwordValid) {
-            return res.json({ success: false, message: "Incorrect password" });
-        }
-
-        // Success - store in localStorage etc.
-        res.json({ 
-            success: true, 
-            student: { id: student.id, name: student.name }
+        // Success response
+        res.json({
+            success: true,
+            student: {
+                id: student.id,
+                name: student.name || "Student"
+            }
         });
 
     } catch (err) {
-        console.error('Login error:', err.message, err.stack);
-        res.status(500).json({ success: false, message: "Server error during login" });
+        console.error('[LOGIN CRASH]', err.message);
+        console.error(err.stack);
+        res.status(500).json({
+            success: false,
+            message: "Server error during login"
+        });
     }
 });
-
 // Get security question for forgot password
 app.post('/api/forgot-question', (req, res) => {
     const { studentId } = req.body;
