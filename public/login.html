@@ -46,6 +46,7 @@
             transition: all 0.3s;
         }
         .btn:hover { background: #157347; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .error-msg { background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; display: none; }
         .links { text-align: center; margin-top: 1.5rem; }
         .links a { color: #198754; text-decoration: underline; cursor: pointer; }
@@ -53,9 +54,11 @@
         .section.active { display: block; }
 
         #recoveryModal, #loadingSplash {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            align-items: center; justify-content: center; z-index: 1000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
         }
+        #loadingSplash.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .modal-content {
             background: white; padding: 2.5rem; border-radius: 1rem;
             text-align: center; max-width: 480px; width: 90%;
@@ -68,15 +71,26 @@
             background: #fff3cd; color: #856404; padding: 1rem;
             border-radius: 0.6rem; margin: 1.5rem 0; font-size: 0.95rem;
         }
+        .loader {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div id="loadingSplash" style="display:flex;">
+    <div id="loadingSplash">
         <div style="text-align:center; color:white;">
             <img src="Image/nursing-logo.png" alt="Logo" style="width:160px; margin-bottom:1rem;">
             <h2>Nursing & Midwifery</h2>
             <p>Student Elections 2026</p>
+            <div class="loader"></div>
         </div>
     </div>
 
@@ -92,315 +106,354 @@
     <div class="container">
         <div class="auth-box">
 
+            <!-- LOGIN SECTION -->
             <div id="loginSection" class="section active">
                 <h2>Student Login</h2>
-                <div class="error-msg" id="loginError"></div>
+                <div id="loginError" class="error-msg"></div>
+
                 <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="loginStudentId" required placeholder="e.g. NM2024001">
+                    <label for="loginAccessId">Access ID</label>
+                    <input type="text" id="loginAccessId" placeholder="ACCESS-XXXXXXXX" required autocomplete="off">
                 </div>
+
                 <div class="form-group">
-                    <label>Access ID</label>
-                    <input type="text" id="loginAccessId" placeholder="ACCESS-XXXXXXXX" required>
-                  </div>
-                  <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="loginPassword" required>
-                  </div>
-                  <button id="loginBtn" type="button" class="btn">Login</button>
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required autocomplete="off">
+                </div>
+
+                <button id="loginBtn" class="btn">Login</button>
+
                 <div class="links">
-                    <a href="#" onclick="showSection('registerSection'); return false;">Register here</a>
-                    <a onclick="showSection('forgotSection')">Forgot password?</a>
+                    <a id="showRegisterLink">Register here</a> | 
+                    <a id="showForgotLink">Forgot password?</a>
                 </div>
             </div>
 
+            <!-- REGISTER SECTION -->
             <div id="registerSection" class="section">
-                <h2>Register Account</h2>
-                <div class="error-msg" id="registerError"></div>
+                <h2>Register New Student</h2>
+                <div id="registerError" class="error-msg"></div>
+
                 <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="regStudentId" required placeholder="e.g. NM2024005">
+                    <label for="registerStudentId">Student ID</label>
+                    <input type="text" id="registerStudentId" placeholder="e.g. 224/5/6MH/MW/NS 01/2000XXX" required autocomplete="off">
                 </div>
+
                 <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" id="regPassword" required>
+                    <label for="registerPassword">Password</label>
+                    <input type="password" id="registerPassword" required autocomplete="new-password">
                 </div>
+
                 <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" id="regConfirmPassword" required>
+                    <label for="registerConfirmPassword">Confirm Password</label>
+                    <input type="password" id="registerConfirmPassword" required autocomplete="new-password">
                 </div>
+
                 <div class="form-group">
-                    <label>Security Question</label>
-                    <select id="regQuestion" required>
-                        <option value="">Choose...</option>
-                        <option>What is your favorite food?</option>
-                        <option>What is the name of your primary school?</option>
-                        <option>What is your mother's maiden name?</option>
-                        <option>What city were you born in?</option>
-                    </select>
+                    <label for="registerQuestion">Security Question</label>
+                    <input type="text" id="registerQuestion" placeholder="e.g. What is your pet's name?" required autocomplete="off">
                 </div>
+
                 <div class="form-group">
-                    <label>Answer</label>
-                    <input type="text" id="regAnswer" required>
+                    <label for="registerAnswer">Answer</label>
+                    <input type="text" id="registerAnswer" required autocomplete="off">
                 </div>
-                <button class="btn" onclick="handleRegister()">Register</button>
+
+                <button id="registerBtn" class="btn">Register</button>
+
                 <div class="links">
-                    <a onclick="showSection('loginSection')">Already have an account? Login</a>
+                    <a id="showLoginFromRegister">Already have an account? Login</a>
                 </div>
             </div>
+
+            <!-- You can add forgot password section later if needed -->
+
+
 
             <div id="forgotSection" class="section">
+
                 <h2>Reset Password</h2>
+                
                 <div class="error-msg" id="forgotError"></div>
+                
                 <div class="form-group">
-                    <label>Student ID</label>
-                    <input type="text" id="forgotStudentId" required>
+                
+                <label>Student ID</label>
+                
+                <input type="text" id="forgotStudentId" required>
+                
                 </div>
+                
                 <button class="btn" onclick="loadSecurityQuestion()">Get Security Question</button>
+                
                 <div id="recoveryOptions" style="display:none; margin-top:1.5rem;">
-                    <div class="form-group">
-                        <label id="questionText">Security Question</label>
-                        <input type="text" id="forgotAnswer" placeholder="Your answer">
-                    </div>
-                    <div style="margin:1.5rem 0; text-align:center; font-weight:500;">
-                        — OR use your Recovery Code —
-                    </div>
-                    <div class="form-group">
-                        <label>Recovery Code (8 digits)</label>
-                        <input type="text" id="forgotRecoveryCode" placeholder="e.g. 48273915">
-                    </div>
-                    <div class="form-group">
-                        <label>New Password</label>
-                        <input type="password" id="forgotNewPassword">
-                    </div>
-                    <div class="form-group">
-                        <label>Confirm New Password</label>
-                        <input type="password" id="forgotConfirmPassword">
-                    </div>
-                    <button class="btn" onclick="handleResetPassword()">Reset Password</button>
+                
+                <div class="form-group">
+                
+                <label id="questionText">Security Question</label>
+                
+                <input type="text" id="forgotAnswer" placeholder="Your answer">
+                
                 </div>
+                
+                <div style="margin:1.5rem 0; text-align:center; font-weight:500;">
+                
+                                        — OR use your Recovery Code —
+                
+                </div>
+                
+                <div class="form-group">
+                
+                <label>Recovery Code (8 digits)</label>
+                
+                <input type="text" id="forgotRecoveryCode" placeholder="e.g. 48273915">
+                
+                </div>
+                
+                <div class="form-group">
+                
+                <label>New Password</label>
+                
+                <input type="password" id="forgotNewPassword">
+                
+                </div>
+                
+                <div class="form-group">
+                
+                <label>Confirm New Password</label>
+                
+                <input type="password" id="forgotConfirmPassword">
+                
+                </div>
+                
+                <button class="btn" onclick="handleResetPassword()">Reset Password</button>
+                
+                </div>
+                
                 <div class="links" style="margin-top:1.5rem;">
-                    <a onclick="showSection('loginSection')">Back to Login</a>
+                
+                <a onclick="showSection('loginSection')">Back to Login</a>
+                
                 </div>
-            </div>
-
-        </div>
-    </div>
-
-    <div id="recoveryModal">
-        <div class="modal-content">
-            <h3>Registration Successful!</h3>
-            <p style="margin-bottom: 1.5rem;">Please save these two codes securely.<br>They are shown <strong>only once</strong>.</p>
-
-            <div class="warning-box">
+                
+                </div>
+                
+                
+                
+                
+                </div>
+                
+                </div>
+                
+                
+                
+                
+                <div id="recoveryModal">
+                
+                <div class="modal-content">
+                
+                <h3>Registration Successful!</h3>
+                
+                <p style="margin-bottom: 1.5rem;">Please save these two codes securely.<br>They are shown <strong>only once</strong>.</p>
+                
+                
+                
+                
+                <div class="warning-box">
+                
                 <strong>Access ID</strong> (required for every login)<br>
+                
                 <div id="accessIdDisplay"></div>
-            </div>
-
-            <div class="warning-box" style="background:#d4edda; color:#155724;">
+                
+                </div>
+                
+                
+                
+                
+                <div class="warning-box" style="background:#d4edda; color:#155724;">
+                
                 <strong>Recovery Code</strong> (use only if you forget your password)<br>
+                
                 <div id="recoveryCodeDisplay"></div>
-            </div>
-
-            <button class="btn" style="margin-top:2rem;" onclick="document.getElementById('recoveryModal').style.display='none'; showSection('loginSection')">
-                I've saved both codes → Go to Login
-            </button>
-        </div>
-    </div>
-
+                
+                </div>
+                 
+                <button class="btn" style="margin-top:2rem;" onclick="document.getElementById('recoveryModal').style.display='none'; showSection('loginSection')">
+                
+                                I've saved both codes → Go to Login
+                
+                </button>
+                
+                </div>
+                
+                </div>
     <script>
-        a// Make sure this runs after the page is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("Page loaded – attaching login handler");
-  
-    const loginBtn = document.getElementById('loginBtn');
-    
-    if (!loginBtn) {
-      console.error("Login button not found! Check id='loginBtn'");
-      return;
-    }
-  
-    console.log("Login button found – click handler attached");
-  
-    loginBtn.addEventListener('click', async () => {
-      console.log("Login button clicked!");
-  
-      const accessIdField = document.getElementById('loginAccessId');
-      const passwordField = document.getElementById('loginPassword');
-  
-      if (!accessIdField || !passwordField) {
-        alert("Form fields not found – check IDs");
-        return;
-      }
-  
-      const accessId = accessIdField.value.trim();
-      const password = passwordField.value;
-  
-      if (!accessId || !password) {
-        alert("Please enter both Access ID and password");
-        return;
-      }
-  
-      // Show loading (optional)
-      loginBtn.disabled = true;
-      loginBtn.textContent = "Logging in...";
-  
-      try {
-        const response = await fetch('/api/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            accessId: accessId,
-            password: password
-          })
-        });
-  
-        const data = await response.json();
-  
-        if (data.success) {
-          localStorage.setItem('currentStudent', JSON.stringify(data.student));
-          window.location.href = 'dashboard.html'; // or your dashboard path
-        } else {
-          alert(data.message || "Login failed");
-        }
-      } catch (err) {
-        console.error("Login fetch failed:", err);
-        alert("Network error – check connection or server");
-      } finally {
-        loginBtn.disabled = false;
-        loginBtn.textContent = "Login";
-      }
-    });
-  });
-        function handleRegister() {
-            const data = {
-                studentId: document.getElementById('regStudentId').value.trim().toUpperCase(),
-                password: document.getElementById('regPassword').value,
-                confirmPassword: document.getElementById('regConfirmPassword').value,
-                question: document.getElementById('regQuestion').value,
-                answer: document.getElementById('regAnswer').value
-            };
-            const error = document.getElementById('registerError');
-
-            if (data.password !== data.confirmPassword) {
-                error.textContent = "Passwords do not match";
-                error.style.display = 'block';
-                return;
+        // ==============================================
+        //  SPLASH SCREEN – reliable hide
+        // ==============================================
+        function hideSplash() {
+            const splash = document.getElementById('loadingSplash');
+            if (splash) {
+                splash.classList.add('hidden');
             }
-
-            fetch('/api/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            })
-            .then(res => res.json())
-            .then(result => {
-                if (result.success) {
-                    document.getElementById('accessIdDisplay').textContent   = result.accessId;
-                    document.getElementById('recoveryCodeDisplay').textContent = result.recoveryCode;
-                    document.getElementById('recoveryModal').style.display = 'flex';
-                    error.style.display = 'none';
-                } else {
-                    error.textContent = result.message || "Registration failed";
-                    error.style.display = 'block';
-                }
-            })
-            .catch(() => {
-                error.textContent = "Server connection error";
-                error.style.display = 'block';
-            });
         }
 
-        // Forgot password functions remain unchanged
-        function loadSecurityQuestion() {
-            const studentId = document.getElementById('forgotStudentId').value.trim().toUpperCase();
-            const error = document.getElementById('forgotError');
-
-            fetch('/api/forgot-question', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ studentId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('questionText').textContent = data.question;
-                    document.getElementById('recoveryOptions').style.display = 'block';
-                    error.style.display = 'none';
-                } else {
-                    error.textContent = data.message;
-                    error.style.display = 'block';
-                }
-            });
-        }
-
-        function handleResetPassword() {
-            const studentId = document.getElementById('forgotStudentId').value.trim().toUpperCase();
-            const answer = document.getElementById('forgotAnswer').value;
-            const recoveryCode = document.getElementById('forgotRecoveryCode').value;
-            const newPassword = document.getElementById('forgotNewPassword').value;
-            const confirmPassword = document.getElementById('forgotConfirmPassword').value;
-            const error = document.getElementById('forgotError');
-
-            if (newPassword !== confirmPassword) {
-                error.textContent = "New passwords do not match";
-                error.style.display = 'block';
-                return;
-            }
-
-            const body = { studentId, newPassword, confirmPassword };
-            if (answer.trim()) body.answer = answer.trim();
-            else if (recoveryCode.trim()) body.recoveryCode = recoveryCode.trim();
-            else {
-                error.textContent = "Provide either security answer or recovery code";
-                error.style.display = 'block';
-                return;
-            }
-
-            fetch('/api/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-            .then(res => res.json())
-            .then(result => {
-                if (result.success) {
-                    alert("Password reset successful! You can now login.");
-                    showSection('loginSection');
-                } else {
-                    error.textContent = result.message;
-                    error.style.display = 'block';
-                }
-            })
-            .catch(() => {
-                error.textContent = "Server error";
-                error.style.display = 'block';
-            });
-        }
-
-        document.addEventListener('keypress', e => {
-            if (e.key === 'Enter') {
-                if (document.getElementById('loginSection').classList.contains('active')) handleLogin();
-                else if (document.getElementById('registerSection').classList.contains('active')) handleRegister();
-            }
+        // Hide as soon as DOM is ready + small delay
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(hideSplash, 600);
         });
 
-        window.addEventListener('load', () => {
-            setTimeout(() => document.getElementById('loadingSplash').style.display = 'none', 1800);
-        });
+        // Force hide after 5 seconds (safety net)
+        setTimeout(hideSplash, 5000);
+
+        // ==============================================
+        //  Section switching
+        // ==============================================
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(sec => {
                 sec.classList.remove('active');
             });
             const target = document.getElementById(sectionId);
-            if (target) {
-                target.classList.add('active');
+            if (target) target.classList.add('active');
+        }
+
+        // ==============================================
+        //  Error helpers
+        // ==============================================
+        function showError(id, msg) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = msg;
+                el.style.display = 'block';
             } else {
-                console.error("Section not found: " + sectionId);
+                alert(msg);
             }
         }
+
+        function clearError(id) {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        }
+
+        // ==============================================
+        //  LOGIN
+        // ==============================================
+        document.getElementById('loginBtn')?.addEventListener('click', async () => {
+            clearError('loginError');
+
+            const accessId = document.getElementById('loginAccessId')?.value?.trim();
+            const password = document.getElementById('loginPassword')?.value;
+
+            if (!accessId || !password) {
+                showError('loginError', 'Please enter both Access ID and password');
+                return;
+            }
+
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = 'Logging in...';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ accessId, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    localStorage.setItem('currentStudent', JSON.stringify(data.student));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    showError('loginError', data.message || 'Login failed');
+                }
+            } catch (err) {
+                console.error('Login fetch error:', err);
+                showError('loginError', 'Network or server error – try again');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Login';
+            }
+        });
+
+        // ==============================================
+        //  REGISTER
+        // ==============================================
+        document.getElementById('registerBtn')?.addEventListener('click', async () => {
+            clearError('registerError');
+
+            const studentId = document.getElementById('registerStudentId')?.value?.trim();
+            const password = document.getElementById('registerPassword')?.value;
+            const confirmPassword = document.getElementById('registerConfirmPassword')?.value;
+            const question = document.getElementById('registerQuestion')?.value?.trim();
+            const answer = document.getElementById('registerAnswer')?.value?.trim();
+
+            if (!studentId || !password || !confirmPassword || !question || !answer) {
+                showError('registerError', 'All fields are required');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('registerError', 'Passwords do not match');
+                return;
+            }
+
+            const btn = document.getElementById('registerBtn');
+            btn.disabled = true;
+            btn.textContent = 'Registering...';
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ studentId, password, confirmPassword, question, answer })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    alert(
+                        `Registration successful!\n\n` +
+                        `Access ID: ${data.accessId}\n` +
+                        `Recovery Code: ${data.recoveryCode}\n\n` +
+                        `SAVE THESE SECURELY – you will need them to log in!`
+                    );
+                    showSection('loginSection');
+                    // Optional: auto-fill access ID for login
+                    document.getElementById('loginAccessId').value = data.accessId;
+                } else {
+                    showError('registerError', data.message || 'Registration failed');
+                }
+            } catch (err) {
+                console.error('Register fetch error:', err);
+                showError('registerError', 'Network or server error – try again');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Register';
+            }
+        });
+
+        // ==============================================
+        //  Navigation links
+        // ==============================================
+        document.getElementById('showRegisterLink')?.addEventListener('click', () => showSection('registerSection'));
+        document.getElementById('showLoginFromRegister')?.addEventListener('click', () => showSection('loginSection'));
+        // Add forgot password logic later if needed
+
+        // ==============================================
+        //  Enter key support
+        // ==============================================
+        document.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (document.getElementById('loginSection').classList.contains('active')) {
+                    document.getElementById('loginBtn')?.click();
+                } else if (document.getElementById('registerSection').classList.contains('active')) {
+                    document.getElementById('registerBtn')?.click();
+                }
+            }
+        });
     </script>
 </body>
 </html>
