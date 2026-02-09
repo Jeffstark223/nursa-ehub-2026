@@ -171,53 +171,20 @@ app.post('/api/register', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-    const { accessId, password } = req.body;
+    // TEMPORARY BYPASS FOR DEMO – IGNORE REAL CHECKS
+    console.log('[DEMO LOGIN] Bypass enabled – logging in any input');
   
-    if (!accessId || !password) {
-      return res.json({ success: false, message: "Access ID and password required" });
-    }
+    const { accessId = 'DEMO-ACCESS-ID', password = 'anything' } = req.body; // default if missing
   
-    const cleanAccess = accessId.trim().toUpperCase();
-    console.log('[LOGIN DEBUG] Received accessId:', accessId, '→ cleaned:', cleanAccess);
-const { data: debugRecord } = await supabase
-  .from('registered_students')
-  .select('access_id')
-  .eq('access_id', cleanAccess)
-  .maybeSingle();
-console.log('Found matching access_id in DB?', !!debugRecord);
-  
-    try {
-      const { data: studentRecord, error } = await supabase
-        .from('registered_students')
-        .select(`
-          student_id,
-          password_hash,
-          password_salt,
-          allowed_students!inner (full_name)
-        `)
-        .eq('access_id', cleanAccess)
-        .single();
-  
-      if (error || !studentRecord) {
-        return res.json({ success: false, message: "Invalid Access ID or not registered" });
+    // Pretend success – return fake/demo student data
+    res.json({
+      success: true,
+      student: {
+        id: 'DEMO-STUDENT-001',
+        name: 'Demo Voter',                 // Change this to your name if you want
+        accessId: accessId || 'DEMO-ACCESS-ID'
       }
-  
-      if (verifyHash(password, studentRecord.password_salt, studentRecord.password_hash)) {
-        res.json({
-          success: true,
-          student: {
-            id: studentRecord.student_id,
-            name: studentRecord.allowed_students?.full_name || "Student",
-            accessId: cleanAccess
-          }
-        });
-      } else {
-        res.json({ success: false, message: "Incorrect password" });
-      }
-    } catch (err) {
-      console.error('Login error:', err.message);
-      res.json({ success: false, message: "Server error – please try again" });
-    }
+    });
   });
 
 app.post('/api/vote', async (req, res) => {
