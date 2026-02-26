@@ -170,25 +170,53 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// TEMPORARY DEMO BYPASS – allows ~20 unique logins without real check
 app.post('/api/login', async (req, res) => {
-    console.log('[DEMO LOGIN] Bypass active – generating unique demo user');
-  
-    // Use a random number to make each login "unique" (up to 9999)
-    const randomNum = Math.floor(Math.random() * 9999) + 1;
-    const fakeStudentId = `DEMO-STUDENT-${String(randomNum).padStart(4, '0')}`;
-    const fakeName = `Demo Voter ${randomNum}`;
-  
-    // Return unique student data for this session
-    res.json({
-      success: true,
-      student: {
-        id: fakeStudentId,
-        name: fakeName,
-        accessId: 'DEMO-ACCESS-' + randomNum
-      }
-    });
-  });
+  const { accessId, password } = req.body;
+
+  if (!accessId || !password) {
+    return res.json({ success: false, message: "Access ID and password required" });
+  }
+
+  const cleanAccess = accessId.trim().toUpperCase();
+
+  console.log('[LOGIN DEBUG] Attempting login with cleanAccess:', cleanAccess);
+
+  try {
+    const { data: studentRecord, error } = await supabase
+      .from('registered_students')
+      .select(`
+        student_id,
+        password_hash,
+        password_salt,
+        allowed_students!inner (full_name)
+      `)
+      .eq('access_id', cleanAccess)
+      .single();
+
+    if (error || !studentRecord) {
+      console.log('[LOGIN DEBUG] No matching record found for:', cleanAccess);
+      return res.json({ success: false, message: "Invalid Access ID or not registered" });
+    }
+
+    if (verifyHash(password, studentRecord.password_salt, studentRecord.password_hash)) {
+      console.log('[LOGIN DEBUG] Password verified for:', cleanAccess);
+      res.json({
+        success: true,
+        student: {
+          id: studentRecord.student_id,
+          name: studentRecord.allowed_students?.full_name || "Student",
+          accessId: cleanAccess
+        }
+      });
+    } else {
+      console.log('[LOGIN DEBUG] Incorrect password for:', cleanAccess);
+      res.json({ success: false, message: "Incorrect password" });
+    }
+  } catch (err) {
+    console.error('[LOGIN ERROR]', err.message);
+    res.json({ success: false, message: "Server error – please try again" });
+  }
+});
 
 app.post('/api/vote', async (req, res) => {
   const { studentId, president, vicepresident, secretary } = req.body;
