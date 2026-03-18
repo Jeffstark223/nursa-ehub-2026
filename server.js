@@ -97,6 +97,9 @@ function requireAdmin(req, res, next) {
 //   STUDENT ENDPOINTS
 // ────────────────────────────────────────────────
 
+// ────────────────────────────────────────────────
+//   FINAL REGISTRATION – Ready for real student list
+// ────────────────────────────────────────────────
 app.post('/api/register', async (req, res) => {
   const { studentId, password, confirmPassword, question, answer } = req.body;
 
@@ -105,26 +108,25 @@ app.post('/api/register', async (req, res) => {
   }
 
   const cleanId = studentId.trim().toUpperCase();
+  console.log('[REGISTER] Attempt for studentId:', cleanId);
 
   try {
-    // Check if in official list (for now: allow any ID during testing)
-    let allowed = null;
-    const { data: allowedData, error: allowErr } = await supabase
+    // 1. Check if this ID exists in official student list
+    const { data: allowed, error: allowErr } = await supabase
       .from('allowed_students')
       .select('student_id, full_name')
       .eq('student_id', cleanId)
       .single();
 
-    if (!allowErr && allowedData) {
-      allowed = allowedData;
-    } else {
-      // Temporary: allow registration even if not in allowed_students (testing phase)
-      allowed = { student_id: cleanId, full_name: `Test Student (${cleanId})` };
-      // When you have the real list → uncomment this line instead:
-      // return res.json({ success: false, message: "Invalid Student ID – not found in department records" });
+    if (allowErr || !allowed) {
+      console.log('[REGISTER] Rejected - ID not in official list:', cleanId);
+      return res.json({ 
+        success: false, 
+        message: "Invalid Student ID – This ID is not registered in the department" 
+      });
     }
 
-    // Check if already registered
+    // 2. Check if already registered
     const { data: existing } = await supabase
       .from('registered_students')
       .select('student_id')
@@ -135,6 +137,7 @@ app.post('/api/register', async (req, res) => {
       return res.json({ success: false, message: "This Student ID is already registered" });
     }
 
+    // 3. Create account
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
@@ -156,16 +159,18 @@ app.post('/api/register', async (req, res) => {
 
     if (insertErr) throw insertErr;
 
+    console.log('[REGISTER] SUCCESS for:', cleanId, 'Access ID:', accessId);
+
     res.json({
       success: true,
       accessId,
       recoveryCode,
-      name: allowed.full_name || "Student",
+      name: allowed.full_name,                    // ← Real name from official list
       message: "Registration successful! Save your Access ID and Recovery Code."
     });
 
   } catch (err) {
-    console.error('Register error:', err.message);
+    console.error('[REGISTER ERROR]', err.message);
     res.json({ success: false, message: "Server error – please try again" });
   }
 });
