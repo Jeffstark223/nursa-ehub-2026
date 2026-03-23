@@ -110,26 +110,13 @@ app.post('/api/register', async (req, res) => {
   const cleanId = studentId.trim().toUpperCase();
 
   try {
-    // Check if already registered
-    const { data: existing } = await supabase
-      .from('registered_students')
-      .select('student_id')
-      .eq('student_id', cleanId)
-      .maybeSingle();
-
-    if (existing) {
-      return res.json({ success: false, message: "This Student ID is already registered" });
-    }
-
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
     const { salt: pwdSalt, hash: pwdHash } = createHash(password);
     const { salt: ansSalt, hash: ansHash } = createHash(answer.toLowerCase().trim());
 
-    console.log('[REGISTER] Attempting to insert student:', cleanId);
-
-    const { error: insertErr } = await supabase
+    const { error } = await supabase
       .from('registered_students')
       .insert({
         student_id: cleanId,
@@ -142,12 +129,10 @@ app.post('/api/register', async (req, res) => {
         security_answer_salt: ansSalt
       });
 
-    if (insertErr) {
-      console.error('[REGISTER INSERT ERROR]', insertErr.message);
-      throw insertErr;
+    if (error) {
+      console.error('Insert error:', error.message);
+      return res.json({ success: false, message: "Server error – please try again" });
     }
-
-    console.log('[REGISTER SUCCESS] Student registered:', cleanId, 'Access ID:', accessId);
 
     res.json({
       success: true,
@@ -158,8 +143,8 @@ app.post('/api/register', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('[REGISTER FINAL ERROR]', err.message);
-    res.json({ success: false, message: "Server error – please try again. Check logs." });
+    console.error('Register error:', err.message);
+    res.json({ success: false, message: "Server error – please try again" });
   }
 });
 
