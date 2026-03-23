@@ -108,25 +108,28 @@ app.post('/api/register', async (req, res) => {
   }
 
   const cleanId = studentId.trim().toUpperCase();
-  console.log('[REGISTER] Attempt for ID:', cleanId);
+  console.log('[REGISTER DEBUG] Input received (raw):', studentId);
+  console.log('[REGISTER DEBUG] Cleaned ID for comparison:', cleanId);
 
   try {
-    // 1. Check if this student ID exists in the official voters list
+    // Check exact match in database
     const { data: allowed, error: allowErr } = await supabase
       .from('allowed_students')
       .select('student_id, full_name')
       .eq('student_id', cleanId)
       .single();
 
+    console.log('[REGISTER DEBUG] Query result:', allowed ? 'FOUND' : 'NOT FOUND');
+    if (allowErr) console.log('[REGISTER DEBUG] Query error:', allowErr.message);
+
     if (allowErr || !allowed) {
-      console.log('[REGISTER] Rejected - ID not found:', cleanId);
       return res.json({ 
         success: false, 
         message: "Invalid Student ID – This ID is not in the official voters list" 
       });
     }
 
-    // 2. Check if already registered
+    // Rest of your registration code (check already registered, create account, etc.)
     const { data: existing } = await supabase
       .from('registered_students')
       .select('student_id')
@@ -137,7 +140,6 @@ app.post('/api/register', async (req, res) => {
       return res.json({ success: false, message: "This Student ID is already registered" });
     }
 
-    // 3. Create the account
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
@@ -159,13 +161,11 @@ app.post('/api/register', async (req, res) => {
 
     if (insertErr) throw insertErr;
 
-    console.log('[REGISTER] SUCCESS for:', cleanId);
-
     res.json({
       success: true,
       accessId,
       recoveryCode,
-      name: allowed.full_name,           // Real name from your list
+      name: allowed.full_name,
       message: "Registration successful! Save your Access ID and Recovery Code."
     });
 
