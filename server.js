@@ -107,33 +107,17 @@ app.post('/api/register', async (req, res) => {
     return res.json({ success: false, message: "All fields required and passwords must match" });
   }
 
-  const rawInput = studentId;
   const cleanId = studentId.trim().toUpperCase();
 
-  console.log('=== REGISTER DEBUG START ===');
-  console.log('Raw input from user:', rawInput);
-  console.log('Cleaned ID (trim + uppercase):', cleanId);
-
   try {
-    // Show what is actually in the database for comparison
-    const { data: allStudents } = await supabase
+    // Very simple check: does this ID exist in allowed_students?
+    const { data: allowed, error } = await supabase
       .from('allowed_students')
-      .select('student_id')
-      .limit(5);  // show first 5 to compare
-
-    console.log('Sample IDs in database:', allStudents.map(s => s.student_id));
-
-    // Exact query
-    const { data: allowed, error: allowErr } = await supabase
-      .from('allowed_students')
-      .select('student_id, full_name')
+      .select('full_name')
       .eq('student_id', cleanId)
       .single();
 
-    console.log('Query result for', cleanId, ':', allowed ? 'FOUND → ' + allowed.full_name : 'NOT FOUND');
-    if (allowErr) console.log('Query error:', allowErr.message);
-
-    if (allowErr || !allowed) {
+    if (error || !allowed) {
       return res.json({ 
         success: false, 
         message: "Invalid Student ID – This ID is not in the official voters list" 
@@ -151,7 +135,7 @@ app.post('/api/register', async (req, res) => {
       return res.json({ success: false, message: "This Student ID is already registered" });
     }
 
-    // Create account
+    // Create the account
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
@@ -173,13 +157,11 @@ app.post('/api/register', async (req, res) => {
 
     if (insertErr) throw insertErr;
 
-    console.log('=== REGISTER SUCCESS === Access ID:', accessId);
-
     res.json({
       success: true,
       accessId,
       recoveryCode,
-      name: allowed.full_name,
+      name: allowed.full_name || "Student",
       message: "Registration successful! Save your Access ID and Recovery Code."
     });
 
