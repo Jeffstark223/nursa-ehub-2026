@@ -107,20 +107,31 @@ app.post('/api/register', async (req, res) => {
     return res.json({ success: false, message: "All fields required and passwords must match" });
   }
 
+  const rawInput = studentId;
   const cleanId = studentId.trim().toUpperCase();
-  console.log('[REGISTER DEBUG] Input received (raw):', studentId);
-  console.log('[REGISTER DEBUG] Cleaned ID for comparison:', cleanId);
+
+  console.log('=== REGISTER DEBUG START ===');
+  console.log('Raw input from user:', rawInput);
+  console.log('Cleaned ID (trim + uppercase):', cleanId);
 
   try {
-    // Check exact match in database
+    // Show what is actually in the database for comparison
+    const { data: allStudents } = await supabase
+      .from('allowed_students')
+      .select('student_id')
+      .limit(5);  // show first 5 to compare
+
+    console.log('Sample IDs in database:', allStudents.map(s => s.student_id));
+
+    // Exact query
     const { data: allowed, error: allowErr } = await supabase
       .from('allowed_students')
       .select('student_id, full_name')
       .eq('student_id', cleanId)
       .single();
 
-    console.log('[REGISTER DEBUG] Query result:', allowed ? 'FOUND' : 'NOT FOUND');
-    if (allowErr) console.log('[REGISTER DEBUG] Query error:', allowErr.message);
+    console.log('Query result for', cleanId, ':', allowed ? 'FOUND → ' + allowed.full_name : 'NOT FOUND');
+    if (allowErr) console.log('Query error:', allowErr.message);
 
     if (allowErr || !allowed) {
       return res.json({ 
@@ -129,7 +140,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
-    // Rest of your registration code (check already registered, create account, etc.)
+    // Check if already registered
     const { data: existing } = await supabase
       .from('registered_students')
       .select('student_id')
@@ -140,6 +151,7 @@ app.post('/api/register', async (req, res) => {
       return res.json({ success: false, message: "This Student ID is already registered" });
     }
 
+    // Create account
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
@@ -161,6 +173,8 @@ app.post('/api/register', async (req, res) => {
 
     if (insertErr) throw insertErr;
 
+    console.log('=== REGISTER SUCCESS === Access ID:', accessId);
+
     res.json({
       success: true,
       accessId,
@@ -170,7 +184,7 @@ app.post('/api/register', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('[REGISTER ERROR]', err.message);
+    console.error('Register error:', err.message);
     res.json({ success: false, message: "Server error – please try again" });
   }
 });
