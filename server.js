@@ -108,10 +108,10 @@ app.post('/api/register', async (req, res) => {
   }
 
   const cleanId = studentId.trim().toUpperCase();
-  console.log('[REGISTER] Attempt for studentId:', cleanId);
+  console.log('[REGISTER] Attempt for ID:', cleanId);
 
   try {
-    // 1. Check if this ID exists in official student list
+    // 1. Check if this student ID exists in the official voters list
     const { data: allowed, error: allowErr } = await supabase
       .from('allowed_students')
       .select('student_id, full_name')
@@ -119,10 +119,10 @@ app.post('/api/register', async (req, res) => {
       .single();
 
     if (allowErr || !allowed) {
-      console.log('[REGISTER] Rejected - ID not in official list:', cleanId);
+      console.log('[REGISTER] Rejected - ID not found:', cleanId);
       return res.json({ 
         success: false, 
-        message: "Invalid Student ID – This ID is not registered in the department" 
+        message: "Invalid Student ID – This ID is not in the official voters list" 
       });
     }
 
@@ -137,7 +137,7 @@ app.post('/api/register', async (req, res) => {
       return res.json({ success: false, message: "This Student ID is already registered" });
     }
 
-    // 3. Create account
+    // 3. Create the account
     const accessId = 'ACCESS-' + crypto.randomBytes(8).toString('hex').toUpperCase();
     const recoveryCode = crypto.randomBytes(10).toString('hex').toUpperCase();
 
@@ -159,13 +159,13 @@ app.post('/api/register', async (req, res) => {
 
     if (insertErr) throw insertErr;
 
-    console.log('[REGISTER] SUCCESS for:', cleanId, 'Access ID:', accessId);
+    console.log('[REGISTER] SUCCESS for:', cleanId);
 
     res.json({
       success: true,
       accessId,
       recoveryCode,
-      name: allowed.full_name,                    // ← Real name from official list
+      name: allowed.full_name,           // Real name from your list
       message: "Registration successful! Save your Access ID and Recovery Code."
     });
 
